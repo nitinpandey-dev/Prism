@@ -1,0 +1,4 @@
+# Pure-Python 3D Solar System Simulation Dependencies
+vpython>=7.6.5
+setuptools<70; python_version >= "3.12"
+numpy>=1.20.0
