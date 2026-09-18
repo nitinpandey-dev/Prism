@@ -30,9 +30,25 @@ Why VPython was chosen for this "Python-only" constraint:
 """
 
 import math
+import os
 import random
 import sys
+
+# Ensure consistent, predictable localhost port 8000 by default
+os.environ.setdefault("VPYTHON_HTTP_PORT", "8000")
+os.environ.setdefault("VPYTHON_NO_LAUNCH_BROWSER", "1")
+
 import vpython as vp
+
+# Prevent VPython from auto-killing the process when a browser tab closes or refreshes
+try:
+    import vpython.no_notebook as _nb
+    def _safe_on_close(self, wasClean, code, reason):
+        self.connection = None
+    _nb.WSserver.onClose = _safe_on_close
+except Exception:
+    pass
+
 
 # ==============================================================================
 # 1. SIMULATION CONSTANTS & SCALING CONFIGURATION
