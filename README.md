@@ -18,11 +18,12 @@ PRISM is structured as a **minimal scientific simulation workspace**:
 ## 🧪 The 5 Core Interactive Simulations
 
 ### 01 · Projectile Motion (Physics)
-- **Visuals**: Full 2D trajectory animation, velocity vector components, launch angle marker, peak height marker ($H_{\max}$), and ground landing range ($R$).
+- **Visuals**: Full 2D trajectory animation, velocity vector with arrowhead, launch angle marker, peak height marker ($H_{\max}$), ground landing range ($R$), and paused-state info overlay.
 - **Physics Equations**:
   $$T = \frac{2u \sin\theta}{g}, \quad R = \frac{u^2 \sin(2\theta)}{g}, \quad H = \frac{u^2 \sin^2\theta}{2g}$$
-- **Controls**: Initial velocity $u$, launch angle $\theta$, gravity $g$ (Earth, Moon, Mars, Jupiter presets), Play/Pause/Replay.
-- **Live Metrics**: Flight time, horizontal range, maximum height, real-time $(x, y)$ coordinates, and instantaneous velocity.
+- **Controls**: Initial velocity $u$, launch angle $\theta$, gravity $g$, adjustable playback speed ($0.2\text{×}$–$3.0\text{×}$), Play/Pause/Resume/Replay.
+- **Pause Controls**: **Pause-at-time** — set a specific $t$ to auto-pause the simulation with an orange crosshair marker on the trajectory. **Timeline Scrub** — drag to any point in the flight. **Step Forward/Backward** — advance or rewind by $0.05s$ increments when paused.
+- **Live Metrics**: Flight time, horizontal range, maximum height, real-time $(x, y)$ coordinates, instantaneous velocity, and vertical velocity $V_y$.
 
 ### 02 · Crystal Structures (Solid State Chemistry)
 - **Visuals**: Interactive 3D unit cell cube with spherical atoms, depth shading, mouse drag-to-rotate, and continuous auto-rotation.
@@ -40,11 +41,11 @@ PRISM is structured as a **minimal scientific simulation workspace**:
 - **Live Metrics**: Dynamic equation formula, $y$-intercept $f(0)$, instantaneous tangent slope $f'(x)$, and cursor coordinates $(x, y)$.
 
 ### 04 · Sorting Algorithms (Computer Science)
-- **Visuals**: Step-by-step animated bar chart with adaptive numeric labels always visible across all array sizes.
-- **Algorithms**: `Bubble Sort`, `Selection Sort`, `Insertion Sort`.
+- **Visuals**: Step-by-step animated bar chart with adaptive numeric labels always visible across all array sizes ($n$ up to $60$).
+- **Algorithms**: `Bubble Sort`, `Selection Sort`, `Insertion Sort`, `Merge Sort` ($O(n \log n)$), `Quick Sort` ($O(n \log n)$ average).
 - **Highlights**: Comparing elements (Amber), Swapped elements (Red), Sorted elements (Green).
-- **Controls**: Algorithm selector, array size slider ($n = 10\text{–}40$), execution speed slider, Start/Pause, Generate Array.
-- **Live Metrics**: Total comparisons counter, total data swaps counter, current execution step, and asymptotic time/space complexities.
+- **Controls**: Algorithm selector (5 algorithms), array size slider ($n = 8\text{–}60$), execution speed slider ($0\text{ms}$–$40\text{ms}$ delay), Start/Pause, Generate Array.
+- **Live Metrics**: Total comparisons counter, total data swaps counter, current execution step, worst-case and best-case time complexities, space complexity, and stability indicator.
 
 ### 05 · Graph Traversal (Algorithms & Data Structures)
 - **Visuals**: 7-node network ($A$ through $G$) connected by bidirectional edges.
