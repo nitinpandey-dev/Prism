@@ -76,7 +76,7 @@ export const SIMULATORS = [
     topic: "Molecular Geometry",
     difficulty: "beginner",
     route: "/simulations/molecular-geometry",
-    status: "coming_soon",
+    status: "available",
     backendEndpoint: null,
     learningObjectives: [
       "Apply VSEPR theory to predict molecular shapes",
@@ -95,7 +95,7 @@ export const SIMULATORS = [
     topic: "Atomic Structure",
     difficulty: "advanced",
     route: "/simulations/atomic-orbitals",
-    status: "coming_soon",
+    status: "available",
     backendEndpoint: null,
     learningObjectives: [
       "Understand orbital shapes and quantum numbers",
@@ -114,7 +114,7 @@ export const SIMULATORS = [
     topic: "Chemical Kinetics",
     difficulty: "intermediate",
     route: "/simulations/reaction-kinetics",
-    status: "coming_soon",
+    status: "available",
     backendEndpoint: null,
     learningObjectives: [
       "Understand reaction rate laws",
@@ -156,7 +156,7 @@ export const SIMULATORS = [
     topic: "Oscillations & Waves",
     difficulty: "intermediate",
     route: "/simulations/simple-harmonic-motion",
-    status: "coming_soon",
+    status: "available",
     backendEndpoint: null,
     learningObjectives: [
       "Understand Hooke's Law and restoring forces",
@@ -175,7 +175,7 @@ export const SIMULATORS = [
     topic: "Waves & Optics",
     difficulty: "intermediate",
     route: "/simulations/wave-interference",
-    status: "coming_soon",
+    status: "available",
     backendEndpoint: null,
     learningObjectives: [
       "Understand the superposition principle",
@@ -194,7 +194,7 @@ export const SIMULATORS = [
     topic: "Electrostatics",
     difficulty: "advanced",
     route: "/simulations/electric-fields",
-    status: "coming_soon",
+    status: "available",
     backendEndpoint: null,
     learningObjectives: [
       "Apply Coulomb's Law",
@@ -236,7 +236,7 @@ export const SIMULATORS = [
     topic: "Multivariable Calculus",
     difficulty: "advanced",
     route: "/simulations/vector-fields",
-    status: "coming_soon",
+    status: "available",
     backendEndpoint: null,
     learningObjectives: [
       "Understand divergence and curl",
@@ -255,7 +255,7 @@ export const SIMULATORS = [
     topic: "Differential Equations",
     difficulty: "advanced",
     route: "/simulations/differential-equations",
-    status: "coming_soon",
+    status: "available",
     backendEndpoint: null,
     learningObjectives: [
       "Understand slope fields as a visual tool",
@@ -276,7 +276,7 @@ export const SIMULATORS = [
     topic: "Ecology & Population Dynamics",
     difficulty: "beginner",
     route: "/simulations/population-growth",
-    status: "coming_soon",
+    status: "available",
     backendEndpoint: null,
     learningObjectives: [
       "Differentiate exponential from logistic growth",
@@ -295,7 +295,7 @@ export const SIMULATORS = [
     topic: "Molecular Biology",
     difficulty: "beginner",
     route: "/simulations/dna-structure",
-    status: "coming_soon",
+    status: "available",
     backendEndpoint: null,
     learningObjectives: [
       "Understand base pairing rules",
@@ -316,7 +316,7 @@ export const SIMULATORS = [
     topic: "Algorithms & Data Structures",
     difficulty: "beginner",
     route: "/simulations/sorting-algorithms",
-    status: "coming_soon",
+    status: "available",
     backendEndpoint: null,
     learningObjectives: [
       "Understand time complexity of sorting algorithms",
@@ -335,7 +335,7 @@ export const SIMULATORS = [
     topic: "Graph Theory",
     difficulty: "intermediate",
     route: "/simulations/graph-algorithms",
-    status: "coming_soon",
+    status: "available",
     backendEndpoint: null,
     learningObjectives: [
       "Understand traversal strategies (BFS vs DFS)",

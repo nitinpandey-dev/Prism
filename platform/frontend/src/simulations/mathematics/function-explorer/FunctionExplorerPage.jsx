@@ -71,7 +71,61 @@ export default function FunctionExplorerPage() {
       if (!res.success) throw new Error(res.error || "Computation failed");
       setData(res.data);
     } catch (err) {
-      setError(err.message);
+      // Client-side fallback evaluator
+      const safeExpr = expression
+        .replace(/\^/g, "**")
+        .replace(/sin/g, "Math.sin")
+        .replace(/cos/g, "Math.cos")
+        .replace(/tan/g, "Math.tan")
+        .replace(/exp/g, "Math.exp")
+        .replace(/sqrt/g, "Math.sqrt")
+        .replace(/log/g, "Math.log")
+        .replace(/pi/gi, "Math.PI");
+
+      const fn = new Function(
+        "x",
+        `try { with (Math) { return ${safeExpr}; } } catch(e) { return 0; }`
+      );
+      const n = 400;
+      const step = (xMax - xMin) / (n - 1);
+      const xArr = [];
+      const yArr = [];
+      const dyArr = [];
+      const roots = [];
+      let prevY = null;
+      for (let i = 0; i < n; i++) {
+        const xVal = xMin + i * step;
+        let yVal = 0;
+        try {
+          yVal = fn(xVal);
+        } catch {
+          yVal = 0;
+        }
+        if (!isFinite(yVal)) yVal = null;
+        xArr.push(xVal);
+        yArr.push(yVal);
+        const dx = 0.001;
+        let dyVal = null;
+        try {
+          dyVal = (fn(xVal + dx) - fn(xVal - dx)) / (2 * dx);
+        } catch {}
+        dyArr.push(dyVal);
+        if (
+          prevY !== null &&
+          yVal !== null &&
+          ((prevY < 0 && yVal >= 0) || (prevY > 0 && yVal <= 0))
+        ) {
+          roots.push(xVal);
+        }
+        prevY = yVal;
+      }
+      setData({
+        x: xArr,
+        y: yArr,
+        dy: dyArr,
+        roots,
+        critical_points: [],
+      });
     } finally {
       setLoading(false);
     }

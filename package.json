@@ -1,0 +1,12 @@
+{
+  "name": "prism-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PRISM - Interactive STEM Simulation Platform",
+  "scripts": {
+    "build": "cd platform/frontend && npm install && npm run build",
+    "dev": "npm run dev --prefix platform/frontend",
+    "dev:frontend": "npm run dev --prefix platform/frontend",
+    "dev:backend": "python platform/backend/main.py"
+  }
+}

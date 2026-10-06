@@ -17,16 +17,17 @@ export default function SimulationLayout({ sim, children, fullWidth = false }) {
         <div className="sim-layout-header-inner">
           <span className="sim-layout-icon">{sim?.icon || subjectMeta.icon}</span>
           <div className="sim-layout-info">
-            <div className="sim-layout-breadcrumb">
-              <Link to="/">Home</Link>
-              <span className="sim-layout-breadcrumb-sep">›</span>
-              <Link to="/explore">Explore</Link>
-              <span className="sim-layout-breadcrumb-sep">›</span>
-              <span style={{ color: subjectMeta.color }}>
-                {subjectMeta.label || sim?.subject}
-              </span>
-              <span className="sim-layout-breadcrumb-sep">›</span>
-              <span>{sim?.title}</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-3)", marginBottom: "var(--sp-2)", flexWrap: "wrap" }}>
+              <Link to="/" className="btn btn-secondary btn-sm" style={{ padding: "0.3rem 0.75rem", fontSize: "0.8rem", textDecoration: "none" }}>
+                ← All Simulations
+              </Link>
+              <div className="sim-layout-breadcrumb" style={{ margin: 0 }}>
+                <span style={{ color: subjectMeta.color }}>
+                  {subjectMeta.label || sim?.subject}
+                </span>
+                <span className="sim-layout-breadcrumb-sep">›</span>
+                <span>{sim?.title}</span>
+              </div>
             </div>
             <h1 className="sim-layout-title">{sim?.title}</h1>
             <p className="sim-layout-desc">{sim?.description}</p>

@@ -4,7 +4,7 @@
  * Uses Vite's proxy to forward /api/* to http://localhost:8000
  */
 
-const BASE_URL = "";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 async function request(path, options = {}) {
   const url = `${BASE_URL}${path}`;
@@ -20,7 +20,7 @@ async function request(path, options = {}) {
     return res.json();
   } catch (err) {
     if (err.name === "TypeError" && err.message.includes("fetch")) {
-      throw new Error("Cannot connect to PRISM backend. Is it running on port 8000?");
+      throw new Error("Cannot connect to PRISM API. Please ensure the backend is available.");
     }
     throw err;
   }

@@ -10,6 +10,7 @@ from models.base import SimulatorMeta
 router = APIRouter(prefix="/api/registry", tags=["Registry"])
 
 
+@router.get("", response_model=List[SimulatorMeta], include_in_schema=False)
 @router.get("/", response_model=List[SimulatorMeta])
 def list_simulators(
     subject: Optional[str] = Query(None, description="Filter by subject"),

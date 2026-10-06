@@ -1,0 +1,6 @@
+# PRISM Platform – Vercel Serverless Python Dependencies
+fastapi>=0.115.0
+pydantic>=2.7.0
+numpy>=1.26.0
+scipy>=1.13.0
+sympy>=1.12

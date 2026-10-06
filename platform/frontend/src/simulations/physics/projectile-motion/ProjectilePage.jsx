@@ -49,7 +49,30 @@ export default function ProjectilePage() {
       if (!res.success) throw new Error(res.error || "Simulation failed");
       setData(res.data);
     } catch (err) {
-      setError(err.message);
+      // Client-side kinematics fallback
+      const angleRad = (params.launch_angle * Math.PI) / 180;
+      const vx0 = params.initial_speed * Math.cos(angleRad);
+      const vy0 = params.initial_speed * Math.sin(angleRad);
+      const g = params.gravity || 9.81;
+      const h0 = params.initial_height || 0;
+      const time_of_flight = (vy0 + Math.sqrt(vy0 * vy0 + 2 * g * h0)) / g;
+      const max_height = h0 + (vy0 * vy0) / (2 * g);
+      const range = vx0 * time_of_flight;
+      const n = 300;
+      const t = Array.from({ length: n }, (_, i) => (i * time_of_flight) / (n - 1));
+      const x = t.map((ti) => vx0 * ti);
+      const y = t.map((ti) => Math.max(0, h0 + vy0 * ti - 0.5 * g * ti * ti));
+      setData({
+        trajectory: { x, y, t },
+        metrics: {
+          time_of_flight: parseFloat(time_of_flight.toFixed(3)),
+          max_height: parseFloat(max_height.toFixed(2)),
+          range: parseFloat(range.toFixed(2)),
+          impact_speed: parseFloat(
+            Math.sqrt(vx0 * vx0 + (vy0 - g * time_of_flight) ** 2).toFixed(2)
+          ),
+        },
+      });
     } finally {
       setLoading(false);
     }

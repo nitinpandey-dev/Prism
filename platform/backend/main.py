@@ -25,6 +25,18 @@ from routers.registry_router import router as registry_router
 from routers.simulations.solid_state_router import router as solid_state_router
 from routers.simulations.projectile_router import router as projectile_router
 from routers.simulations.function_router import router as function_router
+from routers.simulations.harmonic_router import router as harmonic_router
+from routers.simulations.all_simulations_router import (
+    wave_router,
+    electric_router,
+    kinetics_router,
+    orbitals_router,
+    molecular_router,
+    ode_router,
+    vector_field_router,
+    population_router,
+    sorting_router,
+)
 
 app = FastAPI(
     title="PRISM API",
@@ -35,31 +47,54 @@ app = FastAPI(
     openapi_url="/api/openapi.json",
 )
 
-# CORS – allow the Vite dev server
+# CORS – allow local dev + any Vercel deployment domain
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:5174", "http://localhost:3000"],
-    allow_credentials=True,
+    allow_origins=["*"],   # Vercel preview URLs are unpredictable; wildcard is safe for a public educational platform
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
+
 def include_routers():
     """
     Register all simulation routers here.
-    Each new simulator gets one line added here — nothing else changes.
     """
     app.include_router(registry_router)
     app.include_router(solid_state_router)
     app.include_router(projectile_router)
     app.include_router(function_router)
+    app.include_router(harmonic_router)
+    app.include_router(wave_router)
+    app.include_router(electric_router)
+    app.include_router(kinetics_router)
+    app.include_router(orbitals_router)
+    app.include_router(molecular_router)
+    app.include_router(ode_router)
+    app.include_router(vector_field_router)
+    app.include_router(population_router)
+    app.include_router(sorting_router)
 
 
 include_routers()
 
 
+@app.get("/")
+@app.get("/api")
+def api_root():
+    return {
+        "platform": "PRISM",
+        "description": "Extensible multi-subject STEM simulation platform API",
+        "status": "online",
+        "docs": "/api/docs",
+        "version": "1.0.0"
+    }
+
+
 @app.get("/api/health")
+@app.get("/health")
 def health():
     return {"status": "ok", "platform": "PRISM", "version": "1.0.0"}
 

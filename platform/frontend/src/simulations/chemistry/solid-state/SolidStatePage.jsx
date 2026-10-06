@@ -60,7 +60,56 @@ export default function SolidStatePage() {
       });
       setData(res.data);
     } catch (err) {
-      setError(err.message);
+      // Client-side crystal lattice generator fallback
+      const a = latticeConstant;
+      const baseAtoms = [];
+      if (structure === "SC") {
+        baseAtoms.push([0, 0, 0]);
+      } else if (structure === "BCC") {
+        baseAtoms.push([0, 0, 0], [0.5, 0.5, 0.5]);
+      } else if (structure === "FCC") {
+        baseAtoms.push(
+          [0, 0, 0],
+          [0.5, 0.5, 0],
+          [0.5, 0, 0.5],
+          [0, 0.5, 0.5]
+        );
+      }
+
+      const atoms = [];
+      for (let i = 0; i < supercell; i++) {
+        for (let j = 0; j < supercell; j++) {
+          for (let k = 0; k < supercell; k++) {
+            baseAtoms.forEach(([bx, by, bz]) => {
+              atoms.push({
+                x: (i + bx) * a,
+                y: (j + by) * a,
+                z: (k + bz) * a,
+                element: structure === "SC" ? "Po" : structure === "BCC" ? "Fe" : "Cu",
+              });
+            });
+          }
+        }
+      }
+
+      const r =
+        structure === "SC"
+          ? a / 2
+          : structure === "BCC"
+          ? (Math.sqrt(3) / 4) * a
+          : (Math.sqrt(2) / 4) * a;
+
+      setData({
+        atoms,
+        atom_radius: r,
+        atoms_per_unit_cell: structure === "SC" ? 1 : structure === "BCC" ? 2 : 4,
+        coordination_number: structure === "SC" ? 6 : structure === "BCC" ? 8 : 12,
+        packing_efficiency_percent:
+          structure === "SC" ? 52.36 : structure === "BCC" ? 68.02 : 74.05,
+        void_fraction:
+          structure === "SC" ? 47.64 : structure === "BCC" ? 31.98 : 25.95,
+        unit_cell_volume: parseFloat((a ** 3).toFixed(3)),
+      });
     } finally {
       setLoading(false);
     }

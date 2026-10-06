@@ -1,4 +1,9 @@
-# Pure-Python 3D Solar System Simulation Dependencies
-vpython>=7.6.5
-setuptools<70; python_version >= "3.12"
-numpy>=1.20.0
+# PRISM Platform - Vercel Serverless Function Dependencies
+fastapi>=0.115.0
+pydantic>=2.7.0
+numpy>=1.26.0
+scipy>=1.13.0
+sympy>=1.12
+
+# Note: For the standalone 3D Solar System script (solar_system.py),
+# install dependencies using: pip install -r requirements-solar.txt

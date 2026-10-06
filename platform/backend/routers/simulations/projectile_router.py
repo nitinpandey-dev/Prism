@@ -8,6 +8,7 @@ from models.base import SimulationResult
 router = APIRouter(prefix="/api/simulations/projectile-motion", tags=["Physics"])
 
 
+@router.post("", response_model=SimulationResult, include_in_schema=False)
 @router.post("/", response_model=SimulationResult)
 def run_projectile(req: ProjectileRequest):
     """Compute projectile trajectory."""
