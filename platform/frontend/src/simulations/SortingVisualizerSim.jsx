@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 export default function SortingVisualizerSim() {
   const [algorithm, setAlgorithm] = useState("bubble"); // "bubble" | "selection" | "insertion"
   const [arraySize, setArraySize] = useState(20);
-  const [speed, setSpeed] = useState(40); // ms delay per step
+  const [speedLevel, setSpeedLevel] = useState(80); // 0 to 100% (higher = faster)
   const [array, setArray] = useState([]);
   const [isRunning, setIsRunning] = useState(false);
   const [isSorted, setIsSorted] = useState(false);
@@ -18,6 +18,11 @@ export default function SortingVisualizerSim() {
 
   const isRunningRef = useRef(false);
   isRunningRef.current = isRunning;
+
+  const speedRef = useRef(8);
+  // Calculate fast non-linear sleep delay: 80% = 5ms, 100% = 1ms, 50% = 15ms, 10% = 40ms
+  const getDelay = (lvl) => Math.max(1, Math.round(50 * Math.pow((100 - lvl) / 100, 1.6)));
+  speedRef.current = getDelay(speedLevel);
 
   // Generate random array
   const generateArray = () => {
@@ -43,7 +48,7 @@ export default function SortingVisualizerSim() {
 
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  // 1. Bubble Sort
+  // 1. Bubble Sort (Optimized & Fast)
   const runBubbleSort = async (arr) => {
     let a = [...arr];
     const n = a.length;
@@ -52,6 +57,7 @@ export default function SortingVisualizerSim() {
     let steps = 0;
 
     for (let i = 0; i < n; i++) {
+      let swappedInPass = false;
       for (let j = 0; j < n - i - 1; j++) {
         if (!isRunningRef.current) return;
         setComparing([j, j + 1]);
@@ -60,7 +66,7 @@ export default function SortingVisualizerSim() {
         steps++;
         setComparisonsCount(comps);
         setStepCount(steps);
-        await sleep(speed);
+        await sleep(speedRef.current);
 
         if (a[j] > a[j + 1]) {
           if (!isRunningRef.current) return;
@@ -71,10 +77,12 @@ export default function SortingVisualizerSim() {
           setSwapsCount(swaps);
           setSwapped([j, j + 1]);
           setArray([...a]);
-          await sleep(speed);
+          swappedInPass = true;
+          await sleep(speedRef.current);
         }
       }
       setSortedIndices((prev) => [...prev, n - i - 1]);
+      if (!swappedInPass) break;
     }
     setSortedIndices(Array.from({ length: n }, (_, i) => i));
     setComparing([]);
@@ -83,7 +91,7 @@ export default function SortingVisualizerSim() {
     setIsSorted(true);
   };
 
-  // 2. Selection Sort
+  // 2. Selection Sort (Fast)
   const runSelectionSort = async (arr) => {
     let a = [...arr];
     const n = a.length;
@@ -101,7 +109,7 @@ export default function SortingVisualizerSim() {
         steps++;
         setComparisonsCount(comps);
         setStepCount(steps);
-        await sleep(speed);
+        await sleep(speedRef.current);
 
         if (a[j] < a[minIdx]) {
           minIdx = j;
@@ -117,7 +125,7 @@ export default function SortingVisualizerSim() {
         setSwapsCount(swaps);
         setSwapped([i, minIdx]);
         setArray([...a]);
-        await sleep(speed);
+        await sleep(speedRef.current);
       }
       setSortedIndices((prev) => [...prev, i]);
     }
@@ -128,7 +136,7 @@ export default function SortingVisualizerSim() {
     setIsSorted(true);
   };
 
-  // 3. Insertion Sort
+  // 3. Insertion Sort (Fast)
   const runInsertionSort = async (arr) => {
     let a = [...arr];
     const n = a.length;
@@ -149,7 +157,7 @@ export default function SortingVisualizerSim() {
         steps++;
         setComparisonsCount(comps);
         setStepCount(steps);
-        await sleep(speed);
+        await sleep(speedRef.current);
 
         if (a[j] > key) {
           a[j + 1] = a[j];
@@ -157,7 +165,7 @@ export default function SortingVisualizerSim() {
           setSwapsCount(swaps);
           setSwapped([j, j + 1]);
           setArray([...a]);
-          await sleep(speed);
+          await sleep(speedRef.current);
           j--;
         } else {
           break;
@@ -283,15 +291,15 @@ export default function SortingVisualizerSim() {
         <div className="sim-ctrl-item">
           <label>
             <span>Execution Speed</span>
-            <strong>{100 - speed}%</strong>
+            <strong>{speedLevel}% ({speedRef.current}ms)</strong>
           </label>
           <input
             type="range"
-            min="5"
-            max="95"
+            min="10"
+            max="100"
             step="5"
-            value={100 - speed}
-            onChange={(e) => setSpeed(100 - Number(e.target.value))}
+            value={speedLevel}
+            onChange={(e) => setSpeedLevel(Number(e.target.value))}
           />
         </div>
 

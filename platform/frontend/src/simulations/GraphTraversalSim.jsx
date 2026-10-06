@@ -4,7 +4,7 @@ export default function GraphTraversalSim() {
   const [algorithm, setAlgorithm] = useState("BFS"); // "BFS" | "DFS"
   const [startNode, setStartNode] = useState("A");
   const [isRunning, setIsRunning] = useState(false);
-  const [speed, setSpeed] = useState(600); // ms per step
+  const [speedLevel, setSpeedLevel] = useState(75); // 10 to 100% (higher = faster)
 
   // Graph Structure (Nodes with 2D positions and Adjacency List)
   const [nodes, setNodes] = useState([
@@ -33,6 +33,11 @@ export default function GraphTraversalSim() {
 
   const isRunningRef = useRef(false);
   isRunningRef.current = isRunning;
+
+  const speedRef = useRef(150);
+  // Calculate delay: 100% = 40ms, 75% = 120ms, 50% = 250ms, 10% = 500ms
+  const getDelay = (lvl) => Math.max(30, Math.round(550 * Math.pow((100 - lvl) / 100, 1.4)));
+  speedRef.current = getDelay(speedLevel);
 
   const canvasRef = useRef(null);
 
@@ -77,7 +82,7 @@ export default function GraphTraversalSim() {
       order.push(u);
       setTraversalOrder([...order]);
       setFrontier([...queue]);
-      await sleep(speed);
+      await sleep(speedRef.current);
 
       const neighbors = adj[u] || [];
       for (const v of neighbors) {
@@ -88,7 +93,7 @@ export default function GraphTraversalSim() {
           queue.push(v);
           setVisited((prev) => [...prev, v]);
           setFrontier([...queue]);
-          await sleep(speed * 0.7);
+          await sleep(Math.round(speedRef.current * 0.6));
         }
       }
       setActiveEdge(null);
@@ -117,7 +122,7 @@ export default function GraphTraversalSim() {
         order.push(u);
         setVisited((prev) => [...prev, u]);
         setTraversalOrder([...order]);
-        await sleep(speed);
+        await sleep(speedRef.current);
 
         // Push neighbors in reverse to visit in alphabetical order
         const neighbors = [...(adj[u] || [])].reverse();
@@ -126,7 +131,7 @@ export default function GraphTraversalSim() {
             setActiveEdge([u, v]);
             stack.push(v);
             setFrontier([...stack]);
-            await sleep(speed * 0.5);
+            await sleep(Math.round(speedRef.current * 0.5));
           }
         }
         setActiveEdge(null);
@@ -192,7 +197,6 @@ export default function GraphTraversalSim() {
       const isCur = currentNode === n.id;
       const isVis = visited.includes(n.id);
       const isFront = frontier.includes(n.id);
-      const isStart = startNode === n.id;
 
       let bgColor = "#ffffff";
       let borderColor = "#94a3b8";
@@ -311,16 +315,16 @@ export default function GraphTraversalSim() {
 
         <div className="sim-ctrl-item">
           <label>
-            <span>Step Delay</span>
-            <strong>{speed} ms</strong>
+            <span>Execution Speed</span>
+            <strong>{speedLevel}% ({speedRef.current}ms)</strong>
           </label>
           <input
             type="range"
-            min="200"
-            max="1200"
-            step="50"
-            value={speed}
-            onChange={(e) => setSpeed(Number(e.target.value))}
+            min="10"
+            max="100"
+            step="5"
+            value={speedLevel}
+            onChange={(e) => setSpeedLevel(Number(e.target.value))}
           />
         </div>
 

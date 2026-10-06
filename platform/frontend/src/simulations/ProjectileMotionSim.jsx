@@ -50,7 +50,7 @@ export default function ProjectileMotionSim() {
 
     const animate = (now) => {
       if (!lastTimeRef.current) lastTimeRef.current = now;
-      const dt = (now - lastTimeRef.current) / 1000;
+      const dt = ((now - lastTimeRef.current) / 1000) * 1.6;
       lastTimeRef.current = now;
 
       setSimTime((prev) => {
