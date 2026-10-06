@@ -32,7 +32,7 @@ export default function SortingVisualizerSim() {
 
     const newArr = [];
     for (let i = 0; i < arraySize; i++) {
-      newArr.push(Math.floor(Math.random() * 85) + 15);
+      newArr.push(Math.floor(Math.random() * 85) + 12);
     }
     setArray(newArr);
   };
@@ -195,44 +195,46 @@ export default function SortingVisualizerSim() {
     insertion: { name: "Insertion Sort", time: "O(n²) / O(n)", space: "O(1)", stable: "Yes" },
   };
 
+  const maxVal = Math.max(...array, 100);
+
   return (
     <div className="sim-module-workspace">
       {/* ── Main Bar Chart Viewport ── */}
-      <div className="sim-canvas-container" style={{ padding: "20px", display: "flex", alignItems: "flex-end", gap: "4px", minHeight: "420px", background: "#ffffff" }}>
-        {array.map((val, idx) => {
-          const isComp = comparing.includes(idx);
-          const isSwap = swapped.includes(idx);
-          const isDone = sortedIndices.includes(idx);
+      <div className="sim-canvas-container sim-sorting-container">
+        <div className="sim-sorting-bars-wrap">
+          {array.map((val, idx) => {
+            const isComp = comparing.includes(idx);
+            const isSwap = swapped.includes(idx);
+            const isDone = sortedIndices.includes(idx);
 
-          let barColor = "#94a3b8"; // neutral
-          if (isDone) barColor = "#16a34a"; // green
-          if (isComp) barColor = "#f59e0b"; // amber
-          if (isSwap) barColor = "#ef4444"; // red
+            let barColor = "#64748b"; // Clean Slate Blue
+            if (isDone) barColor = "#16a34a"; // Green Sorted
+            if (isComp) barColor = "#f59e0b"; // Amber Comparing
+            if (isSwap) barColor = "#ef4444"; // Red Swapped
 
-          return (
-            <div
-              key={idx}
-              style={{
-                flex: 1,
-                height: `${val * 3.4}px`,
-                backgroundColor: barColor,
-                borderRadius: "3px 3px 0 0",
-                transition: "height 0.1s ease, background-color 0.15s ease",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "flex-end",
-                paddingBottom: "4px",
-              }}
-            >
-              {arraySize <= 25 && (
-                <span style={{ fontSize: "10px", color: isDone || isComp || isSwap ? "#ffffff" : "#334155", fontWeight: 600, fontFamily: "var(--font-mono)" }}>
-                  {val}
-                </span>
-              )}
-            </div>
-          );
-        })}
+            const heightPct = Math.max(6, (val / maxVal) * 82);
+
+            return (
+              <div
+                key={idx}
+                className="sim-sorting-bar-col"
+              >
+                {arraySize <= 25 && (
+                  <span className="sim-sorting-bar-val">
+                    {val}
+                  </span>
+                )}
+                <div
+                  className="sim-sorting-bar"
+                  style={{
+                    height: `${heightPct}%`,
+                    backgroundColor: barColor,
+                  }}
+                />
+              </div>
+            );
+          })}
+        </div>
         <div className="sim-canvas-overlay-badge">
           {ALGO_DESCS[algorithm].name} · {isRunning ? "Sorting..." : isSorted ? "Sorted ✓" : "Ready"}
         </div>
