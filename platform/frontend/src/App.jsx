@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import ProjectileMotionSim from "./simulations/ProjectileMotionSim";
 import CrystalStructuresSim from "./simulations/CrystalStructuresSim";
 import FunctionVisualizerSim from "./simulations/FunctionVisualizerSim";
-import SortingVisualizerSim from "./simulations/SortingVisualizerSim";
+import WaveSuperpositionSim from "./simulations/WaveSuperpositionSim";
 import GraphTraversalSim from "./simulations/GraphTraversalSim";
 import "./App.css";
 
@@ -29,11 +29,11 @@ const SIMULATIONS = [
     subject: "Mathematics",
   },
   {
-    id: "sorting",
+    id: "waves",
     num: "04",
-    name: "Sorting Algorithms",
-    desc: "Step through Bubble, Selection, and Insertion sorts with live swaps.",
-    subject: "Computer Science",
+    name: "Wave Superposition",
+    desc: "Visualize constructive, destructive, and beat interference patterns instantly.",
+    subject: "Physics",
   },
   {
     id: "graph",
@@ -117,7 +117,7 @@ export default function App() {
               {activeSimId === "projectile" && <ProjectileMotionSim />}
               {activeSimId === "crystal" && <CrystalStructuresSim />}
               {activeSimId === "function" && <FunctionVisualizerSim />}
-              {activeSimId === "sorting" && <SortingVisualizerSim />}
+              {activeSimId === "waves" && <WaveSuperpositionSim />}
               {activeSimId === "graph" && <GraphTraversalSim />}
             </div>
           </div>

@@ -40,12 +40,14 @@ PRISM is structured as a **minimal scientific simulation workspace**:
 - **Controls**: Function selector, parameter $a$ slider, frequency/parameter $b$ slider, zoom range ($\pm5$, $\pm10$).
 - **Live Metrics**: Dynamic equation formula, $y$-intercept $f(0)$, instantaneous tangent slope $f'(x)$, and cursor coordinates $(x, y)$.
 
-### 04 · Sorting Algorithms (Computer Science)
-- **Visuals**: Step-by-step animated bar chart with adaptive numeric labels always visible across all array sizes ($n$ up to $60$).
-- **Algorithms**: `Bubble Sort`, `Selection Sort`, `Insertion Sort`, `Merge Sort` ($O(n \log n)$), `Quick Sort` ($O(n \log n)$ average).
-- **Highlights**: Comparing elements (Amber), Swapped elements (Red), Sorted elements (Green).
-- **Controls**: Algorithm selector (5 algorithms), array size slider ($n = 8\text{–}60$), execution speed slider ($0\text{ms}$–$40\text{ms}$ delay), Start/Pause, Generate Array.
-- **Live Metrics**: Total comparisons counter, total data swaps counter, current execution step, worst-case and best-case time complexities, space complexity, and stability indicator.
+### 04 · Wave Superposition & Interference (Physics)
+- **Visuals**: Dual-wave canvas with real-time superposition rendering. Individual waves shown as dashed lines (blue + amber), resultant as solid green with area fill.
+- **Physics**: Superposition principle $y(x) = y_1(x) + y_2(x)$ where $y_i = A_i \sin(f_i x + \varphi_i)$.
+- **Controls**: Independent amplitude $A$, frequency $f$, and phase $\varphi$ sliders for each wave. Toggle visibility of Wave 1, Wave 2, and resultant.
+- **Presets**: Constructive ($\Delta\varphi = 0$), Destructive ($\Delta\varphi = \pi$), Beat Pattern (close frequencies), Harmonic (octave), Complex.
+- **Animation**: Optional traveling wave mode with real-time propagation.
+- **Live Metrics**: Interference type (constructive/destructive/partial/beat), maximum resultant amplitude ($A_1 + A_2$), minimum resultant ($|A_1 - A_2|$), and beat frequency $f_{\text{beat}} = |f_1 - f_2|$.
+- **Instant Results**: All calculations and rendering update immediately on slider changes — zero wait time.
 
 ### 05 · Graph Traversal (Algorithms & Data Structures)
 - **Visuals**: 7-node network ($A$ through $G$) connected by bidirectional edges.
@@ -102,7 +104,7 @@ Prism/
 │   │   │   │   ├── ProjectileMotionSim.jsx
 │   │   │   │   ├── CrystalStructuresSim.jsx
 │   │   │   │   ├── FunctionVisualizerSim.jsx
-│   │   │   │   ├── SortingVisualizerSim.jsx
+│   │   │   │   ├── WaveSuperpositionSim.jsx
 │   │   │   │   └── GraphTraversalSim.jsx
 │   │   │   ├── App.jsx            # Single-page workspace orchestrator
 │   │   │   ├── App.css            # Minimal scientific design styling

@@ -280,48 +280,8 @@
   z-index: 10;
 }
 
-/* ── Sorting Visualizer Specific Styles ── */
-.sim-sorting-container {
-  min-height: 340px;
-  height: 360px;
-  background: #ffffff;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 40px 24px 16px 24px;
-}
 
-.sim-sorting-bars-wrap {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: flex-end;
-  gap: clamp(2px, 0.35vw, 5px);
-}
 
-.sim-sorting-bar-col {
-  flex: 1;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 4px;
-}
-
-.sim-sorting-bar-val {
-  font-size: 11px;
-  font-family: var(--font-mono);
-  font-weight: 600;
-  color: #475569;
-}
-
-.sim-sorting-bar {
-  width: 100%;
-  border-radius: 4px 4px 0 0;
-  transition: height 0.12s ease, background-color 0.15s ease;
-  min-height: 6px;
-}
 
 /* ── Controls Strip ── */
 .sim-controls-strip {
