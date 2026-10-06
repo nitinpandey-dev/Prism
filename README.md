@@ -1,86 +1,117 @@
-# ☀️ Pure-Python 3D Solar System Simulation
+# PRISM — Interactive STEM Simulation Platform
 
-A complete, interactive, browser-viewable **3D Solar System Simulation** built **100% in Python** — with **no manual HTML, CSS, or JavaScript written anywhere in the stack**.
+> **“Turning abstract concepts into things you can see.”**
 
----
-
-## 🚀 Why VPython? (Library Justification)
-
-This project strictly uses **VPython** (`vpython`) to satisfy the **Python-only** constraint:
-
-1. **100% Python-Controlled Stack**:
-   All 3D WebGL geometry, physics calculations (Keplerian orbits, angular momentum conservation, axial spins), lighting, real-time animation loops, and UI control panel widgets are declared and manipulated strictly in Python.
-2. **Zero Hand-Written Web Code**:
-   When you run `python3 solar_system.py`, VPython automatically spins up a local WebSocket/HTTP server and launches your default web browser tab. It streams WebGL rendering commands and UI events directly over WebSockets without requiring any custom HTML/JS templates.
-3. **Built-in Native 3D Camera Controls**:
-   VPython provides out-of-the-box interactive 3D navigation in the browser without writing any JavaScript mouse event handlers.
-4. **Pure-Python UI Widgets**:
-   Interactive controls (buttons, sliders, dropdown menus, checkboxes, and dynamic captions) are instantiated and bound to Python callbacks directly.
+PRISM is a student-focused, interactive STEM simulation platform where complex mathematical, scientific, and algorithmic concepts are understood through direct visual manipulation and real-time computation.
 
 ---
 
-## 🪐 Features
+## 🔬 Product Philosophy & Design
 
-- **Central Star (The Sun)**:
-  - Emissive glowing sphere with a pulsating coronal layer.
-  - Realistic point-light source positioned at the origin that illuminates planets with natural day/night terminator shadows.
-- **All 8 Major Planets**:
-  - **Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune**.
-  - Distinct realistic colors, scaled radii, and axial tilts (e.g. Earth at 23.44°, Uranus at 97.77°, Venus retrograde spin).
-- **Keplerian Orbital Mechanics**:
-  - True elliptical orbits calculated using the polar Keplerian equation:
-    $$r(\theta) = \frac{a(1 - e^2)}{1 + e \cos(\theta)}$$
-  - Variable orbital velocity following Kepler's 2nd Law (conservation of angular momentum: $\frac{d\theta}{dt} \propto \frac{1}{r^2}$).
-  - Harmonic orbital periods adhering to Kepler's 3rd Law ($T \propto a^{3/2}$).
-- **Special Astrodynamic Features**:
-  - **Saturn's Ring System**: Multi-layered concentric rings tilted along Saturn's rotational axis.
-  - **Earth's Moon**: Hierarchical 3D orbit around Earth.
-  - **Starfield Background**: 450+ randomly distributed 3D glowing background stars.
-  - **Orbital Trajectory Curves**: Smooth elliptical guide curves.
-  - **3D Planet Labels**: Attached dynamic billboard text name tags.
-- **Pure-Python Interactive Control Panel**:
-  - ⏸ **Play / Pause Button**: Freeze or resume time evolution.
-  - 🎚 **Simulation Speed Slider**: Smoothly adjust speed from 0.1x to 5.0x with real-time multiplier readout.
-  - 🎯 **Focus Target Dropdown Menu**: Center and track the camera on the Sun or any individual planet for close-up inspection.
-  - 🔄 **Reset View Button**: Restores the default wide solar system perspective.
-  - ☑️ **Show Orbit Paths Checkbox**: Toggle visibility of orbital ellipse guide curves.
-  - ☑️ **Show Planet Labels Checkbox**: Toggle 3D planet name tags.
-  - 📊 **Live Astronomical Telemetry HUD**: Real-time stats for the focused body (semi-major axis, orbital eccentricity, orbital period, rotational period, real diameter, and astronomical description).
+PRISM is structured as a **minimal scientific simulation workspace**:
+- **Single-Page Architecture**: Zero complex page routes, zero login walls, zero decorative marketing fluff.
+- **Direct Workspace Expansion**: Select a simulation, and it expands immediately to occupy the primary screen.
+- **Learn → Manipulate → Simulate → Visualize → Understand**: Large dominant canvas visualizers, minimal sliders/controls, and live monospace equation readouts.
 
 ---
 
-## 🎮 Camera Controls (Native in Browser)
+## 🧪 The 5 Core Interactive Simulations
 
-| Action | Control |
-| :--- | :--- |
-| **Orbit / Rotate** | **Right-click + drag** (or `Ctrl` + Left-click + drag) |
-| **Zoom In / Out** | **Scroll wheel** (or Middle-click + drag / `Alt` + Left-click + drag) |
-| **Pan Camera** | **`Shift` + Left-click + drag** |
+### 01 · Projectile Motion (Physics)
+- **Visuals**: Full 2D trajectory animation, velocity vector components, launch angle marker, peak height marker ($H_{\max}$), and ground landing range ($R$).
+- **Physics Equations**:
+  $$T = \frac{2u \sin\theta}{g}, \quad R = \frac{u^2 \sin(2\theta)}{g}, \quad H = \frac{u^2 \sin^2\theta}{2g}$$
+- **Controls**: Initial velocity $u$, launch angle $\theta$, gravity $g$ (Earth, Moon, Mars, Jupiter presets), Play/Pause/Replay.
+- **Live Metrics**: Flight time, horizontal range, maximum height, real-time $(x, y)$ coordinates, and instantaneous velocity.
+
+### 02 · Crystal Structures (Solid State Chemistry)
+- **Visuals**: Interactive 3D unit cell cube with spherical atoms, depth shading, mouse drag-to-rotate, and continuous auto-rotation.
+- **Lattice Systems**:
+  - **SC (Simple Cubic)**: $Z = 1$, Coordination $= 6$, Packing Efficiency $= 52.4\%$, $a = 2r$.
+  - **BCC (Body-Centred Cubic)**: $Z = 2$, Coordination $= 8$, Packing Efficiency $= 68.0\%$, $\sqrt{3}a = 4r$.
+  - **FCC (Face-Centred Cubic)**: $Z = 4$, Coordination $= 12$, Packing Efficiency $= 74.0\%$, $\sqrt{2}a = 4r$.
+- **Controls**: Structure toggle (`SC`, `BCC`, `FCC`), atomic radius slider $r$ ($60\text{–}220\text{ pm}$), auto-rotation toggle, view reset.
+- **Live Metrics**: Atoms per cell ($Z$), coordination number, packing efficiency %, edge length $a$, and density $\rho = \frac{ZM}{N_A a^3}$.
+
+### 03 · Function Visualizer (Mathematics)
+- **Visuals**: Dynamic Cartesian coordinate plane with numeric ticks, responsive grid, smooth curve plotting, and interactive hover crosshair with tangent line tracking.
+- **Functions**: Quadratic ($y = ax^2$), Sine ($y = a\sin(bx)$), Cosine ($y = a\cos(bx)$), Exponential ($y = ae^{bx}$), Logarithm ($y = a\ln(bx)$).
+- **Controls**: Function selector, parameter $a$ slider, frequency/parameter $b$ slider, zoom range ($\pm5$, $\pm10$).
+- **Live Metrics**: Dynamic equation formula, $y$-intercept $f(0)$, instantaneous tangent slope $f'(x)$, and cursor coordinates $(x, y)$.
+
+### 04 · Sorting Algorithms (Computer Science)
+- **Visuals**: Step-by-step animated bar chart with adaptive numeric labels always visible across all array sizes.
+- **Algorithms**: `Bubble Sort`, `Selection Sort`, `Insertion Sort`.
+- **Highlights**: Comparing elements (Amber), Swapped elements (Red), Sorted elements (Green).
+- **Controls**: Algorithm selector, array size slider ($n = 10\text{–}40$), execution speed slider, Start/Pause, Generate Array.
+- **Live Metrics**: Total comparisons counter, total data swaps counter, current execution step, and asymptotic time/space complexities.
+
+### 05 · Graph Traversal (Algorithms & Data Structures)
+- **Visuals**: 7-node network ($A$ through $G$) connected by bidirectional edges.
+- **Algorithms**: `Breadth-First Search (BFS)` (FIFO queue frontier) and `Depth-First Search (DFS)` (LIFO call stack).
+- **Highlights**: Active traversing edge (blue highlight), current active node (pulsing blue ring), visited nodes (green badge with visit sequence order).
+- **Controls**: Algorithm selector (`BFS` / `DFS`), starting node selector ($A\text{–}G$), step delay slider, Start/Pause/Replay, Reset.
+- **Live Metrics**: Sequence order ($A \to B \to \dots$), queue/stack state array, visited count, and $O(V + E)$ complexity indicator.
 
 ---
 
-## 🛠️ Installation & Quick Start
+## 💻 Tech Stack & Architecture
 
-### 1. Install Dependencies
+- **Frontend**: React 18, Vite, HTML5 Canvas, SVG, Vanilla CSS (clean scientific academic white theme).
+- **Backend API**: Python 3.11+, FastAPI, NumPy, SciPy (`scipy.integrate.solve_ivp`), SymPy.
+- **Standalone 3D Simulation**: `solar_system.py` (Pure-Python 3D interactive Solar System powered by VPython).
+
+---
+
+## 🚀 Running Locally
+
+### 1. Run the Frontend Simulation Workspace
 ```bash
+cd platform/frontend
+npm install
+npm run dev
+```
+Open **[http://localhost:5173/](http://localhost:5173/)** in your browser.
+
+### 2. Run the Python FastAPI Backend (Optional / Scientific API)
+```bash
+cd platform/backend
 pip install -r requirements.txt
+python main.py
 ```
-*(Or directly: `pip install vpython "setuptools<70"`)*
+FastAPI server runs on **[http://localhost:8000/api](http://localhost:8000/api)** with interactive docs at **[http://localhost:8000/api/docs](http://localhost:8000/api/docs)**.
 
-### 2. Run the Simulation
+### 3. Run Standalone Pure-Python 3D Solar System
 ```bash
-python3 solar_system.py
+pip install -r requirements-solar.txt
+python solar_system.py
 ```
-
-Your default web browser will automatically open a new tab rendering the full 3D interactive Solar System simulation!
+Automatically launches a local browser tab running the pure-Python 3D VPython simulation.
 
 ---
 
-## 📂 Project Structure
+## 📁 Repository Structure
 
 ```
 Prism/
-├── solar_system.py      # Main self-contained 3D simulation script
-├── requirements.txt     # Python dependency specifications
-└── README.md            # Documentation and control guide
+├── platform/
+│   ├── frontend/
+│   │   ├── src/
+│   │   │   ├── simulations/
+│   │   │   │   ├── ProjectileMotionSim.jsx
+│   │   │   │   ├── CrystalStructuresSim.jsx
+│   │   │   │   ├── FunctionVisualizerSim.jsx
+│   │   │   │   ├── SortingVisualizerSim.jsx
+│   │   │   │   └── GraphTraversalSim.jsx
+│   │   │   ├── App.jsx            # Single-page workspace orchestrator
+│   │   │   ├── App.css            # Minimal scientific design styling
+│   │   │   └── index.css          # Clean white theme tokens
+│   │   └── package.json
+│   └── backend/
+│       ├── simulations/           # NumPy & SciPy computation engines
+│       ├── routers/               # FastAPI route definitions
+│       └── main.py                # FastAPI entry point
+├── solar_system.py                # Standalone pure-Python 3D simulation
+├── requirements.txt               # Platform Python dependencies
+└── README.md
 ```

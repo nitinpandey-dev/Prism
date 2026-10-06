@@ -296,7 +296,7 @@
   height: 100%;
   display: flex;
   align-items: flex-end;
-  gap: 6px;
+  gap: clamp(2px, 0.35vw, 5px);
 }
 
 .sim-sorting-bar-col {

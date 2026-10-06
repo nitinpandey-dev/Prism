@@ -219,11 +219,15 @@ export default function SortingVisualizerSim() {
                 key={idx}
                 className="sim-sorting-bar-col"
               >
-                {arraySize <= 25 && (
-                  <span className="sim-sorting-bar-val">
-                    {val}
-                  </span>
-                )}
+                <span
+                  className="sim-sorting-bar-val"
+                  style={{
+                    fontSize: arraySize > 30 ? "8.5px" : arraySize > 22 ? "10px" : "11px",
+                    letterSpacing: arraySize > 30 ? "-0.04em" : "normal",
+                  }}
+                >
+                  {val}
+                </span>
                 <div
                   className="sim-sorting-bar"
                   style={{
