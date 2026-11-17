@@ -1,128 +1,70 @@
-import React, { useState } from "react";
-import ProjectileMotionSim from "./simulations/ProjectileMotionSim";
-import CrystalStructuresSim from "./simulations/CrystalStructuresSim";
-import FunctionVisualizerSim from "./simulations/FunctionVisualizerSim";
-import WaveSuperpositionSim from "./simulations/WaveSuperpositionSim";
-import GraphTraversalSim from "./simulations/GraphTraversalSim";
+import React from "react";
+import TopNavigation from "./components/layout/TopNavigation";
+import GameCanvas from "./game/runtime/GameCanvas";
+import GameHUD from "./components/hud/GameHUD";
+import LauncherHUD from "./components/hud/LauncherHUD";
+import ScienceHUD from "./components/hud/ScienceHUD";
+import AriaDialogueHUD from "./components/aria/AriaDialogueHUD";
+import MissionCompleteModal from "./components/hud/MissionCompleteModal";
+import LabWorkbench from "./components/layout/LabWorkbench";
+import SkatingWorldView from "./features/science-adventure/SkatingWorldView";
+import AdventureHub from "./features/science-adventure/AdventureHub";
+import ActivitySelectorModal from "./features/skating/components/ActivitySelectorModal";
+import { useGameStore } from "./stores/useGameStore";
+import { useAdventureStore } from "./features/science-adventure/stores/useAdventureStore";
 import "./App.css";
 
-const SIMULATIONS = [
-  {
-    id: "projectile",
-    num: "01",
-    name: "Projectile Motion",
-    desc: "Explore velocity, angle, gravity and trajectory.",
-    subject: "Physics",
-  },
-  {
-    id: "crystal",
-    num: "02",
-    name: "Crystal Structures",
-    desc: "Visualize SC, BCC, and FCC solid-state unit cell geometry.",
-    subject: "Chemistry",
-  },
-  {
-    id: "function",
-    num: "03",
-    name: "Function Visualizer",
-    desc: "Plot dynamic algebraic, trigonometric and exponential equations.",
-    subject: "Mathematics",
-  },
-  {
-    id: "waves",
-    num: "04",
-    name: "Wave Superposition",
-    desc: "Visualize constructive, destructive, and beat interference patterns instantly.",
-    subject: "Physics",
-  },
-  {
-    id: "graph",
-    num: "05",
-    name: "Graph Traversal",
-    desc: "Animate Breadth-First (BFS) and Depth-First (DFS) search across node graphs.",
-    subject: "Algorithms",
-  },
-];
-
 export default function App() {
-  const [activeSimId, setActiveSimId] = useState(null);
-
-  const activeSim = SIMULATIONS.find((s) => s.id === activeSimId);
+  const { appMode, activeActivity, isActivityModalOpen, setActivityModalOpen } = useGameStore();
+  const currentAdventureScreen = useAdventureStore((s) => s.currentScreen);
 
   return (
-    <div className="prism-root">
-      {/* ── Minimal Top Navigation Header ── */}
-      <header className="prism-top-nav">
-        <div className="prism-nav-inner">
-          <div className="prism-brand" onClick={() => setActiveSimId(null)}>
-            <span className="prism-logo">PRISM</span>
-            <span className="prism-subtitle">Interactive STEM Simulations</span>
-          </div>
+    <div
+      className="prism-root"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        width: "100vw",
+        height: "100vh",
+        overflow: "hidden",
+        position: "relative",
+      }}
+    >
+      {/* ── High-Tech Top Navigation Bar ── */}
+      <TopNavigation />
 
-          <div className="prism-nav-right">
-            <span className="prism-sim-count">5 Simulations</span>
-          </div>
-        </div>
-      </header>
-
-      {/* ── Main Workspace Body ── */}
-      <main className="prism-main">
-        {!activeSimId ? (
-          /* ── 1. SELECTOR VIEW (Initial State) ── */
-          <div className="prism-selector-container">
-            <div className="prism-selector-intro">
-              <p className="prism-tagline">“Turning abstract concepts into things you can see.”</p>
-              <h2 className="prism-heading">Choose a Simulation</h2>
+      {/* ── Main Platform Viewport ── */}
+      <main style={{ flex: 1, position: "relative", width: "100%", height: "calc(100vh - 52px)", overflow: "hidden" }}>
+        {appMode === "story" ? (
+          activeActivity === "skating" ? (
+            /* ── 1A. SCIENCE ADVENTURE: SKATING WORLD & ADVENTURE HUB ── */
+            currentAdventureScreen === "hub" ? (
+              <AdventureHub />
+            ) : (
+              <SkatingWorldView />
+            )
+          ) : (
+            /* ── 1B. EXISTING ACTIVITY: KEPLER-186F OUTPOST THETA (PHY-001) ── */
+            <div style={{ width: "100%", height: "100%", position: "relative" }}>
+              <GameCanvas />
+              <GameHUD />
+              <LauncherHUD />
+              <ScienceHUD />
+              <AriaDialogueHUD />
+              <MissionCompleteModal />
             </div>
-
-            <div className="prism-selector-list">
-              {SIMULATIONS.map((sim) => (
-                <button
-                  key={sim.id}
-                  className="prism-sim-row"
-                  onClick={() => setActiveSimId(sim.id)}
-                >
-                  <div className="prism-sim-num">{sim.num}</div>
-                  <div className="prism-sim-info">
-                    <div className="prism-sim-title-row">
-                      <h3 className="prism-sim-name">{sim.name}</h3>
-                      <span className="prism-sim-subj">{sim.subject}</span>
-                    </div>
-                    <p className="prism-sim-desc">{sim.desc}</p>
-                  </div>
-                  <div className="prism-sim-arrow">→</div>
-                </button>
-              ))}
-            </div>
-          </div>
+          )
         ) : (
-          /* ── 2. ACTIVE SIMULATION WORKSPACE VIEW ── */
-          <div className="prism-sim-active-container">
-            <div className="prism-sim-header">
-              <button
-                className="prism-back-btn"
-                onClick={() => setActiveSimId(null)}
-              >
-                ← Back to simulations
-              </button>
-
-              <div className="prism-sim-active-title">
-                <h2>{activeSim?.name}</h2>
-                <span className="prism-active-badge">{activeSim?.subject}</span>
-              </div>
-            </div>
-
-            {/* Render Active Simulation Component */}
-            <div className="prism-sim-workspace-body">
-              {activeSimId === "projectile" && <ProjectileMotionSim />}
-              {activeSimId === "crystal" && <CrystalStructuresSim />}
-              {activeSimId === "function" && <FunctionVisualizerSim />}
-              {activeSimId === "waves" && <WaveSuperpositionSim />}
-              {activeSimId === "graph" && <GraphTraversalSim />}
-            </div>
-          </div>
+          /* ── 2. LAB WORKBENCH: THE 5 INTERACTIVE SIMULATORS ── */
+          <LabWorkbench />
         )}
       </main>
+
+      {/* ── Physics World Activity Selector Modal (Switcher) ── */}
+      <ActivitySelectorModal
+        isOpen={isActivityModalOpen}
+        onClose={() => setActivityModalOpen(false)}
+      />
     </div>
   );
 }

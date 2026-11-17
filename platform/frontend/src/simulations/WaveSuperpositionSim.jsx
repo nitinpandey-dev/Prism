@@ -8,7 +8,7 @@ export default function WaveSuperpositionSim() {
 
   // Wave 2 parameters
   const [amp2, setAmp2] = useState(1.0);
-  const [freq2, setFreq2] = useState(1.5);
+  const [freq2, setFreq2] = useState(1.0);
   const [phase2, setPhase2] = useState(0);
 
   // Display
@@ -21,6 +21,20 @@ export default function WaveSuperpositionSim() {
   const canvasRef = useRef(null);
   const animRef = useRef(null);
   const lastFrameRef = useRef(null);
+
+  const handleReset = () => {
+    setAmp1(1.0);
+    setFreq1(1.0);
+    setPhase1(0);
+    setAmp2(1.0);
+    setFreq2(1.0);
+    setPhase2(0);
+    setShowWave1(true);
+    setShowWave2(true);
+    setShowResultant(true);
+    setAnimating(false);
+    setTimeOffset(0);
+  };
 
   // Derived values (instant)
   const maxAmp = amp1 + amp2;
@@ -374,7 +388,7 @@ export default function WaveSuperpositionSim() {
             onClick={() => setAnimating(!animating)}>
             {animating ? "⏸ Stop" : "▶ Animate"}
           </button>
-          <button className="btn btn-secondary" onClick={() => setTimeOffset(0)}>
+          <button className="btn btn-secondary" onClick={handleReset}>
             Reset
           </button>
         </div>

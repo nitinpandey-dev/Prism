@@ -1,157 +1,248 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
+
+// Precomputes the deterministic sequence of traversal execution steps
+function computeTraversalSteps(alg, start, nodeList, edgeList) {
+  const adj = {};
+  nodeList.forEach((n) => (adj[n.id] = []));
+  edgeList.forEach(([u, v]) => {
+    adj[u].push(v);
+    adj[v].push(u);
+  });
+  Object.keys(adj).forEach((k) => adj[k].sort());
+
+  const steps = [];
+
+  // Step 0: Initial state before any action
+  steps.push({
+    currentNode: null,
+    activeEdge: null,
+    visited: [],
+    frontier: [start],
+    traversalOrder: [],
+    desc: `Ready: ${alg} initialized with Start Node ${start} in frontier`,
+  });
+
+  if (alg === "BFS") {
+    const queue = [start];
+    const seen = new Set([start]);
+    const order = [];
+
+    while (queue.length > 0) {
+      const u = queue.shift();
+      order.push(u);
+
+      steps.push({
+        currentNode: u,
+        activeEdge: null,
+        visited: [...order],
+        frontier: [...queue],
+        traversalOrder: [...order],
+        desc: `Dequeued & visiting Vertex ${u}`,
+      });
+
+      const neighbors = adj[u] || [];
+      for (const v of neighbors) {
+        if (!seen.has(v)) {
+          seen.add(v);
+          queue.push(v);
+          steps.push({
+            currentNode: u,
+            activeEdge: [u, v],
+            visited: [...order],
+            frontier: [...queue],
+            traversalOrder: [...order],
+            desc: `Explored edge (${u} ─ ${v}) → Enqueued Vertex ${v}`,
+          });
+        }
+      }
+    }
+  } else {
+    // Depth-First Search (DFS)
+    const stack = [start];
+    const seen = new Set();
+    const order = [];
+
+    while (stack.length > 0) {
+      const u = stack.pop();
+
+      if (!seen.has(u)) {
+        seen.add(u);
+        order.push(u);
+
+        steps.push({
+          currentNode: u,
+          activeEdge: null,
+          visited: [...order],
+          frontier: [...stack],
+          traversalOrder: [...order],
+          desc: `Popped & visiting Vertex ${u}`,
+        });
+
+        // Push neighbors in reverse to explore in alphabetical order
+        const neighbors = [...(adj[u] || [])].reverse();
+        for (const v of neighbors) {
+          if (!seen.has(v)) {
+            stack.push(v);
+            steps.push({
+              currentNode: u,
+              activeEdge: [u, v],
+              visited: [...order],
+              frontier: [...stack],
+              traversalOrder: [...order],
+              desc: `Explored edge (${u} ─ ${v}) → Pushed Vertex ${v} onto call stack`,
+            });
+          }
+        }
+      }
+    }
+  }
+
+  // Final Step: Complete
+  const last = steps[steps.length - 1];
+  steps.push({
+    currentNode: null,
+    activeEdge: null,
+    visited: [...last.visited],
+    frontier: [],
+    traversalOrder: [...last.traversalOrder],
+    desc: `Traversal Complete · All ${last.visited.length} reachable vertices visited`,
+  });
+
+  return steps;
+}
 
 export default function GraphTraversalSim() {
   const [algorithm, setAlgorithm] = useState("BFS"); // "BFS" | "DFS"
   const [startNode, setStartNode] = useState("A");
-  const [isRunning, setIsRunning] = useState(false);
-  const [speedLevel, setSpeedLevel] = useState(75); // 10 to 100% (higher = faster)
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1.0); // 0.2x to 3.0x
 
-  // Graph Structure (Nodes with 2D positions and Adjacency List)
-  const [nodes, setNodes] = useState([
-    { id: "A", x: 120, y: 190 },
-    { id: "B", x: 260, y: 100 },
-    { id: "C", x: 260, y: 280 },
-    { id: "D", x: 420, y: 90 },
-    { id: "E", x: 420, y: 210 },
-    { id: "F", x: 420, y: 320 },
-    { id: "G", x: 580, y: 200 },
-  ]);
+  // Timeline scrub & pause-at-step state (matching Projectile Motion controls)
+  const [currentStep, setCurrentStep] = useState(0);
+  const [pauseAtEnabled, setPauseAtEnabled] = useState(false);
+  const [pauseAtStep, setPauseAtStep] = useState(4);
 
-  const [edges, setEdges] = useState([
-    ["A", "B"], ["A", "C"],
-    ["B", "D"], ["B", "E"],
-    ["C", "E"], ["C", "F"],
-    ["D", "G"], ["E", "G"], ["F", "G"],
-  ]);
+  // Graph Structure (7 Nodes with 2D positions and 9 Edges)
+  const nodes = useMemo(
+    () => [
+      { id: "A", x: 120, y: 190 },
+      { id: "B", x: 260, y: 100 },
+      { id: "C", x: 260, y: 280 },
+      { id: "D", x: 420, y: 90 },
+      { id: "E", x: 420, y: 210 },
+      { id: "F", x: 420, y: 320 },
+      { id: "G", x: 580, y: 200 },
+    ],
+    []
+  );
 
-  // Traversal State
-  const [visited, setVisited] = useState([]);
-  const [traversalOrder, setTraversalOrder] = useState([]);
-  const [currentNode, setCurrentNode] = useState(null);
-  const [activeEdge, setActiveEdge] = useState(null);
-  const [frontier, setFrontier] = useState([]); // Queue for BFS, Stack for DFS
-
-  const isRunningRef = useRef(false);
-  isRunningRef.current = isRunning;
-
-  const speedRef = useRef(150);
-  // Calculate delay: 100% = 40ms, 75% = 120ms, 50% = 250ms, 10% = 500ms
-  const getDelay = (lvl) => Math.max(30, Math.round(550 * Math.pow((100 - lvl) / 100, 1.4)));
-  speedRef.current = getDelay(speedLevel);
+  const edges = useMemo(
+    () => [
+      ["A", "B"], ["A", "C"],
+      ["B", "D"], ["B", "E"],
+      ["C", "E"], ["C", "F"],
+      ["D", "G"], ["E", "G"], ["F", "G"],
+    ],
+    []
+  );
 
   const canvasRef = useRef(null);
 
-  const resetTraversal = () => {
-    setIsRunning(false);
-    setVisited([]);
-    setTraversalOrder([]);
-    setCurrentNode(null);
-    setActiveEdge(null);
-    setFrontier([]);
-  };
+  // Precomputed traversal steps for current algorithm & startNode
+  const steps = useMemo(
+    () => computeTraversalSteps(algorithm, startNode, nodes, edges),
+    [algorithm, startNode, nodes, edges]
+  );
+  const totalSteps = steps.length - 1;
 
-  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  // Reset or adjust pause-at-step when totalSteps changes
+  useEffect(() => {
+    if (pauseAtStep > totalSteps) {
+      setPauseAtStep(Math.max(1, Math.min(totalSteps, 4)));
+    }
+  }, [totalSteps, pauseAtStep]);
 
-  // Build Adjacency List
-  const getAdjList = () => {
-    const adj = {};
-    nodes.forEach((n) => (adj[n.id] = []));
-    edges.forEach(([u, v]) => {
-      adj[u].push(v);
-      adj[v].push(u);
-    });
-    // Sort neighbors alphabetically for deterministic traversal
-    Object.keys(adj).forEach((k) => adj[k].sort());
-    return adj;
-  };
+  // Reset timeline when algorithm or start node changes
+  useEffect(() => {
+    setCurrentStep(0);
+    setIsPlaying(false);
+    setIsPaused(false);
+  }, [algorithm, startNode]);
 
-  // 1. Breadth-First Search (BFS)
-  const runBFS = async () => {
-    const adj = getAdjList();
-    const queue = [startNode];
-    const seen = new Set([startNode]);
-    const order = [];
+  // Animation playback loop
+  useEffect(() => {
+    if (!isPlaying) return;
 
-    setFrontier([...queue]);
-    setVisited([startNode]);
+    const delayMs = Math.max(90, Math.round(650 / playbackSpeed));
+    const timer = setInterval(() => {
+      setCurrentStep((prev) => {
+        const next = prev + 1;
 
-    while (queue.length > 0) {
-      if (!isRunningRef.current) return;
-      const u = queue.shift();
-      setCurrentNode(u);
-      order.push(u);
-      setTraversalOrder([...order]);
-      setFrontier([...queue]);
-      await sleep(speedRef.current);
-
-      const neighbors = adj[u] || [];
-      for (const v of neighbors) {
-        if (!isRunningRef.current) return;
-        if (!seen.has(v)) {
-          seen.add(v);
-          setActiveEdge([u, v]);
-          queue.push(v);
-          setVisited((prev) => [...prev, v]);
-          setFrontier([...queue]);
-          await sleep(Math.round(speedRef.current * 0.6));
+        // Auto-pause if pauseAtStep breakpoint reached
+        if (pauseAtEnabled && next === pauseAtStep) {
+          setIsPlaying(false);
+          setIsPaused(true);
+          return next;
         }
-      }
-      setActiveEdge(null);
-    }
-    setCurrentNode(null);
-    setIsRunning(false);
-  };
 
-  // 2. Depth-First Search (DFS)
-  const runDFS = async () => {
-    const adj = getAdjList();
-    const stack = [startNode];
-    const seen = new Set();
-    const order = [];
-
-    setFrontier([...stack]);
-
-    while (stack.length > 0) {
-      if (!isRunningRef.current) return;
-      const u = stack.pop();
-      setFrontier([...stack]);
-
-      if (!seen.has(u)) {
-        seen.add(u);
-        setCurrentNode(u);
-        order.push(u);
-        setVisited((prev) => [...prev, u]);
-        setTraversalOrder([...order]);
-        await sleep(speedRef.current);
-
-        // Push neighbors in reverse to visit in alphabetical order
-        const neighbors = [...(adj[u] || [])].reverse();
-        for (const v of neighbors) {
-          if (!seen.has(v)) {
-            setActiveEdge([u, v]);
-            stack.push(v);
-            setFrontier([...stack]);
-            await sleep(Math.round(speedRef.current * 0.5));
-          }
+        // Completion
+        if (next >= totalSteps) {
+          setIsPlaying(false);
+          setIsPaused(false);
+          return totalSteps;
         }
-        setActiveEdge(null);
+
+        return next;
+      });
+    }, delayMs);
+
+    return () => clearInterval(timer);
+  }, [isPlaying, playbackSpeed, pauseAtEnabled, pauseAtStep, totalSteps]);
+
+  // Active step state
+  const activeState = steps[Math.min(currentStep, totalSteps)] || steps[0];
+  const { currentNode, activeEdge, visited, frontier, traversalOrder, desc } =
+    activeState;
+
+  // Handlers
+  const handlePlayToggle = () => {
+    if (isPlaying) {
+      setIsPlaying(false);
+      setIsPaused(true);
+    } else {
+      if (currentStep >= totalSteps) {
+        // Replay from beginning
+        setCurrentStep(0);
       }
+      setIsPlaying(true);
+      setIsPaused(false);
     }
-    setCurrentNode(null);
-    setIsRunning(false);
   };
 
-  const handleStart = () => {
-    if (visited.length > 0) {
-      resetTraversal();
-    }
-    setIsRunning(true);
-    if (algorithm === "BFS") runBFS();
-    else runDFS();
+  const handleReset = () => {
+    setIsPlaying(false);
+    setIsPaused(false);
+    setCurrentStep(0);
   };
 
-  const handlePause = () => {
-    setIsRunning(false);
+  const handleTimelineScrub = (e) => {
+    const stepVal = Number(e.target.value);
+    setIsPlaying(false);
+    setIsPaused(true);
+    setCurrentStep(stepVal);
+  };
+
+  const handleStepBackward = () => {
+    setIsPlaying(false);
+    setIsPaused(true);
+    setCurrentStep((prev) => Math.max(0, prev - 1));
+  };
+
+  const handleStepForward = () => {
+    setIsPlaying(false);
+    setIsPaused(true);
+    setCurrentStep((prev) => Math.min(totalSteps, prev + 1));
   };
 
   // Canvas Graph Rendering
@@ -166,7 +257,6 @@ export default function GraphTraversalSim() {
 
     const nodeMap = {};
     nodes.forEach((n) => {
-      // Scale node coordinates to fit canvas dimensions nicely
       const px = (n.x / 700) * (width - 120) + 60;
       const py = (n.y / 400) * (height - 80) + 40;
       nodeMap[n.id] = { px, py };
@@ -189,6 +279,16 @@ export default function GraphTraversalSim() {
       ctx.moveTo(p1.px, p1.py);
       ctx.lineTo(p2.px, p2.py);
       ctx.stroke();
+
+      // If active edge, draw directional highlight pulse
+      if (isActive) {
+        ctx.strokeStyle = "rgba(37, 99, 235, 0.25)";
+        ctx.lineWidth = 7;
+        ctx.beginPath();
+        ctx.moveTo(p1.px, p1.py);
+        ctx.lineTo(p2.px, p2.py);
+        ctx.stroke();
+      }
     });
 
     // 2. Draw Nodes
@@ -220,10 +320,19 @@ export default function GraphTraversalSim() {
 
       // Outer Pulse for Current Node
       if (isCur) {
-        ctx.strokeStyle = "rgba(37, 99, 235, 0.3)";
+        ctx.strokeStyle = "rgba(37, 99, 235, 0.35)";
         ctx.lineWidth = 6;
         ctx.beginPath();
         ctx.arc(px, py, 26, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      // Pause-at indicator ring if reached
+      if (pauseAtEnabled && currentStep === pauseAtStep && isCur) {
+        ctx.strokeStyle = "rgba(249, 115, 22, 0.6)";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(px, py, 32, 0, Math.PI * 2);
         ctx.stroke();
       }
 
@@ -257,7 +366,18 @@ export default function GraphTraversalSim() {
         ctx.fillText((orderIdx + 1).toString(), px + 14, py - 14);
       }
     });
-  }, [nodes, edges, currentNode, visited, activeEdge, frontier, startNode, traversalOrder]);
+  }, [
+    nodes,
+    edges,
+    currentNode,
+    visited,
+    activeEdge,
+    frontier,
+    traversalOrder,
+    pauseAtEnabled,
+    currentStep,
+    pauseAtStep,
+  ]);
 
   return (
     <div className="sim-module-workspace">
@@ -269,24 +389,30 @@ export default function GraphTraversalSim() {
           height={420}
           className="sim-main-canvas"
         />
-        <div className="sim-canvas-overlay-badge">
+        <div className="sim-canvas-overlay-badge" style={{ left: "12px", right: "auto" }}>
           {algorithm} Traversal · Start at Node {startNode}
+        </div>
+        <div className="sim-canvas-overlay-badge" style={{ right: "12px", left: "auto" }}>
+          {isPlaying
+            ? "● RUNNING"
+            : isPaused
+            ? "⏸ PAUSED"
+            : currentStep >= totalSteps && totalSteps > 0
+            ? "● COMPLETED"
+            : "● READY"}
         </div>
       </div>
 
-      {/* ── Controls Strip ── */}
+      {/* ── Controls Section ── */}
       <div className="sim-controls-strip">
-        <div className="sim-ctrl-item">
+        <div className="sim-ctrl-item sim-ctrl-segmented">
           <label>Algorithm</label>
           <div className="sim-segmented-btn">
             {["BFS", "DFS"].map((alg) => (
               <button
                 key={alg}
                 className={`seg-btn ${algorithm === alg ? "active" : ""}`}
-                onClick={() => {
-                  setAlgorithm(alg);
-                  resetTraversal();
-                }}
+                onClick={() => setAlgorithm(alg)}
               >
                 {alg === "BFS" ? "Breadth-First (BFS)" : "Depth-First (DFS)"}
               </button>
@@ -294,18 +420,14 @@ export default function GraphTraversalSim() {
           </div>
         </div>
 
-        <div className="sim-ctrl-item">
+        <div className="sim-ctrl-item sim-ctrl-segmented">
           <label>Starting Node</label>
           <div className="sim-segmented-btn">
             {nodes.map((n) => (
               <button
                 key={n.id}
                 className={`seg-btn ${startNode === n.id ? "active" : ""}`}
-                disabled={isRunning}
-                onClick={() => {
-                  setStartNode(n.id);
-                  resetTraversal();
-                }}
+                onClick={() => setStartNode(n.id)}
               >
                 {n.id}
               </button>
@@ -315,31 +437,96 @@ export default function GraphTraversalSim() {
 
         <div className="sim-ctrl-item">
           <label>
-            <span>Execution Speed</span>
-            <strong>{speedLevel}% ({speedRef.current}ms)</strong>
+            <span>Playback Speed</span>
+            <strong>{playbackSpeed.toFixed(1)}×</strong>
           </label>
           <input
             type="range"
-            min="10"
-            max="100"
-            step="5"
-            value={speedLevel}
-            onChange={(e) => setSpeedLevel(Number(e.target.value))}
+            min="0.2"
+            max="3.0"
+            step="0.1"
+            value={playbackSpeed}
+            onChange={(e) => setPlaybackSpeed(Number(e.target.value))}
           />
         </div>
 
         <div className="sim-btn-group">
-          {!isRunning ? (
-            <button className="btn btn-primary" onClick={handleStart}>
-              {visited.length > 0 ? "Replay" : "Start Traversal"}
-            </button>
-          ) : (
-            <button className="btn btn-secondary" onClick={handlePause}>
-              Pause
-            </button>
-          )}
-          <button className="btn btn-secondary" onClick={resetTraversal}>
+          <button
+            className={`btn ${isPlaying ? "btn-secondary" : "btn-primary"}`}
+            onClick={handlePlayToggle}
+          >
+            {isPlaying
+              ? "⏸ Pause"
+              : currentStep >= totalSteps && totalSteps > 0
+              ? "↺ Replay"
+              : isPaused
+              ? "▶ Resume"
+              : "▶ Start Traversal"}
+          </button>
+          <button className="btn btn-secondary" onClick={handleReset}>
             Reset
+          </button>
+        </div>
+      </div>
+
+      {/* ── Timeline Scrub & Stepping Controls (Matching Projectile Motion) ── */}
+      <div className="sim-controls-strip" style={{ borderTop: "1px solid #e5e7eb" }}>
+        <div className="sim-ctrl-item" style={{ flex: 2 }}>
+          <label>
+            <span>Timeline Scrub</span>
+            <strong>Step = {currentStep} / {totalSteps}</strong>
+          </label>
+          <input
+            type="range"
+            min="0"
+            max={totalSteps}
+            step="1"
+            value={currentStep}
+            onChange={handleTimelineScrub}
+          />
+        </div>
+
+        <div className="sim-ctrl-item" style={{ flex: 1 }}>
+          <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <input
+              type="checkbox"
+              checked={pauseAtEnabled}
+              onChange={(e) => setPauseAtEnabled(e.target.checked)}
+              style={{ width: "14px", height: "14px", accentColor: "#f97316" }}
+            />
+            <span>Pause at step =</span>
+            <strong style={{ color: pauseAtEnabled ? "#ea580c" : "#9ca3af" }}>
+              {pauseAtStep}
+            </strong>
+          </label>
+          <input
+            type="range"
+            min="1"
+            max={Math.max(1, totalSteps)}
+            step="1"
+            value={pauseAtStep}
+            disabled={!pauseAtEnabled}
+            onChange={(e) => setPauseAtStep(Number(e.target.value))}
+            style={{ opacity: pauseAtEnabled ? 1 : 0.4 }}
+          />
+        </div>
+
+        <div className="sim-btn-group">
+          <button
+            className="btn btn-secondary"
+            onClick={handleStepBackward}
+            disabled={isPlaying || currentStep <= 0}
+            title="Step backward 1 step"
+          >
+            ◀◀
+          </button>
+          <button
+            className="btn btn-secondary"
+            onClick={handleStepForward}
+            disabled={isPlaying || currentStep >= totalSteps}
+            title="Step forward 1 step"
+          >
+            ▶▶
           </button>
         </div>
       </div>
@@ -351,7 +538,7 @@ export default function GraphTraversalSim() {
           <span className="res-val" style={{ fontSize: "1.05rem" }}>
             {traversalOrder.length > 0
               ? traversalOrder.join(" → ")
-              : "Click 'Start Traversal' to begin"}
+              : "Click 'Start Traversal' or scrub timeline"}
           </span>
           <span className="res-eq">Sequence of visited vertices</span>
         </div>
@@ -369,11 +556,13 @@ export default function GraphTraversalSim() {
         </div>
 
         <div className="sim-result-card highlight">
-          <span className="res-label">Current Node & Progress</span>
-          <span className="res-val">
-            Node: {currentNode || "—"} ({visited.length}/{nodes.length})
+          <span className="res-label">Current Step & Complexity</span>
+          <span className="res-val" style={{ fontSize: "0.95rem" }}>
+            {desc}
           </span>
-          <span className="res-eq">Complexity: O(V + E)</span>
+          <span className="res-eq">
+            Visited: {visited.length}/{nodes.length} · Complexity: O(V + E)
+          </span>
         </div>
       </div>
     </div>

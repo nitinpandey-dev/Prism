@@ -22,6 +22,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from routers.registry_router import router as registry_router
+from routers.progress_router import router as progress_router
+from routers.aria_router import router as aria_router
 from routers.simulations.solid_state_router import router as solid_state_router
 from routers.simulations.projectile_router import router as projectile_router
 from routers.simulations.function_router import router as function_router
@@ -58,11 +60,15 @@ app.add_middleware(
 
 
 
+from database.connection import init_db
+
 def include_routers():
     """
     Register all simulation routers here.
     """
     app.include_router(registry_router)
+    app.include_router(progress_router)
+    app.include_router(aria_router)
     app.include_router(solid_state_router)
     app.include_router(projectile_router)
     app.include_router(function_router)
@@ -79,6 +85,11 @@ def include_routers():
 
 
 include_routers()
+
+try:
+    init_db()
+except Exception as e:
+    print(f"Database init warning: {e}")
 
 
 @app.get("/")
