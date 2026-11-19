@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useGameStore } from '../../stores/useGameStore';
 import ProjectileMotionSim from '../../simulations/ProjectileMotionSim';
 import CrystalStructuresSim from '../../simulations/CrystalStructuresSim';
 import FunctionVisualizerSim from '../../simulations/FunctionVisualizerSim';
@@ -44,7 +45,14 @@ const SIMULATIONS = [
 ];
 
 export default function LabWorkbench() {
-  const [activeSimId, setActiveSimId] = useState<string | null>('projectile');
+  const selectedLabSim = useGameStore((s) => s.selectedLabSim);
+  const setSelectedLabSim = useGameStore((s) => s.setSelectedLabSim);
+  const [activeSimId, setActiveSimId] = useState<string | null>(selectedLabSim || 'projectile');
+
+  const handleSelectSim = (id: string) => {
+    setActiveSimId(id);
+    setSelectedLabSim(id);
+  };
 
   const activeSim = SIMULATIONS.find((s) => s.id === activeSimId);
 
@@ -73,7 +81,7 @@ export default function LabWorkbench() {
         {SIMULATIONS.map((sim) => (
           <button
             key={sim.id}
-            onClick={() => setActiveSimId(sim.id)}
+            onClick={() => handleSelectSim(sim.id)}
             style={{
               padding: '12px 16px',
               border: 'none',

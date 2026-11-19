@@ -14,12 +14,14 @@ interface GameStore {
   isConsoleOpen: boolean;
   isActivityModalOpen: boolean;
   isSoundEnabled: boolean;
+  selectedLabSim: string;
   
   // Actions
   setAppMode: (mode: AppMode) => void;
   setActiveActivity: (act: StoryActivity) => void;
   setActivityModalOpen: (open: boolean) => void;
   setLearningMode: (mode: LearningMode) => void;
+  setSelectedLabSim: (id: string) => void;
   setCameraView: (view: CameraViewMode) => void;
   updatePlayerPosition: (pos: [number, number, number], rot: number, moving: boolean) => void;
   setNearInteractable: (interactable: InteractableEntity | null) => void;
@@ -45,11 +47,13 @@ export const useGameStore = create<GameStore>((set) => ({
   isConsoleOpen: false,
   isActivityModalOpen: false,
   isSoundEnabled: true,
+  selectedLabSim: 'projectile',
 
   setAppMode: (mode) => set({ appMode: mode }),
   setActiveActivity: (act) => set({ activeActivity: act }),
   setActivityModalOpen: (open) => set({ isActivityModalOpen: open }),
   setLearningMode: (mode) => set({ learningMode: mode }),
+  setSelectedLabSim: (id) => set({ selectedLabSim: id }),
   setCameraView: (view) => set({ cameraView: view }),
   updatePlayerPosition: (pos, rot, moving) =>
     set((state) => ({
