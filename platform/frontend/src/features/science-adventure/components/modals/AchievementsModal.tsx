@@ -1,6 +1,6 @@
 import { ACHIEVEMENTS } from '../../types/adventure';
 import { useAdventureStore } from '../../stores/useAdventureStore';
-import { X, Award, CheckCircle2, Lock } from 'lucide-react';
+import { X, Trophy, CheckCircle2, Lock, Award } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;
@@ -18,8 +18,8 @@ export default function AchievementsModal({ isOpen, onClose }: Props) {
         position: 'fixed',
         inset: 0,
         zIndex: 80,
-        background: 'rgba(15, 23, 42, 0.85)',
-        backdropFilter: 'blur(10px)',
+        background: 'rgba(7, 10, 19, 0.88)',
+        backdropFilter: 'blur(16px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -29,12 +29,12 @@ export default function AchievementsModal({ isOpen, onClose }: Props) {
       <div
         style={{
           width: '100%',
-          maxWidth: 620,
+          maxWidth: 580,
           maxHeight: '85vh',
-          background: 'linear-gradient(145deg, #1e293b, #0f172a)',
-          border: '2px solid rgba(245, 158, 11, 0.4)',
-          borderRadius: 28,
-          boxShadow: '0 25px 60px rgba(0,0,0,0.7)',
+          background: '#0d1322',
+          border: '1px solid rgba(255, 255, 255, 0.12)',
+          borderRadius: 20,
+          boxShadow: '0 24px 64px rgba(0, 0, 0, 0.8)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
@@ -43,8 +43,9 @@ export default function AchievementsModal({ isOpen, onClose }: Props) {
         {/* Header */}
         <div
           style={{
-            padding: '20px 24px',
-            background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+            padding: '18px 24px',
+            background: 'linear-gradient(135deg, #1e293b, #0f172a)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
             color: '#ffffff',
             display: 'flex',
             alignItems: 'center',
@@ -52,22 +53,22 @@ export default function AchievementsModal({ isOpen, onClose }: Props) {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: '1.8rem' }}>🏆</span>
+            <Trophy size={20} color="#f59e0b" />
             <div>
-              <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 900 }}>Trophy Cabinet & Badges</h3>
-              <div style={{ fontSize: '0.75rem', color: '#fef08a', fontWeight: 700 }}>
-                {unlockedAchievementIds.length} of {ACHIEVEMENTS.length} Badges Earned • {playerXP} Adventure XP
+              <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800 }}>Student Achievement Badges</h3>
+              <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>
+                {unlockedAchievementIds.length} of {ACHIEVEMENTS.length} Badges Earned • {playerXP} XP
               </div>
             </div>
           </div>
           <button
             onClick={onClose}
             style={{
-              background: 'rgba(255, 255, 255, 0.2)',
+              background: 'rgba(255, 255, 255, 0.1)',
               border: 'none',
-              borderRadius: '50%',
-              width: 36,
-              height: 36,
+              borderRadius: 8,
+              width: 32,
+              height: 32,
               color: '#ffffff',
               cursor: 'pointer',
               display: 'flex',
@@ -75,68 +76,68 @@ export default function AchievementsModal({ isOpen, onClose }: Props) {
               justifyContent: 'center',
             }}
           >
-            <X size={20} />
+            <X size={16} />
           </button>
         </div>
 
-        {/* Badges List */}
-        <div style={{ padding: '24px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {/* List */}
+        <div style={{ padding: '20px 24px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 10 }}>
           {ACHIEVEMENTS.map((ach) => {
             const isUnlocked = unlockedAchievementIds.includes(ach.id);
             return (
               <div
                 key={ach.id}
                 style={{
-                  background: isUnlocked ? 'rgba(30, 41, 59, 0.8)' : 'rgba(15, 23, 42, 0.5)',
-                  border: isUnlocked ? '2px solid #f59e0b' : '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: 20,
-                  padding: '14px 18px',
+                  background: isUnlocked ? 'rgba(255, 255, 255, 0.03)' : 'rgba(255, 255, 255, 0.01)',
+                  border: isUnlocked ? '1px solid rgba(245, 158, 11, 0.35)' : '1px solid rgba(255, 255, 255, 0.06)',
+                  borderRadius: 12,
+                  padding: '14px 16px',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 16,
-                  opacity: isUnlocked ? 1 : 0.6,
+                  gap: 14,
+                  opacity: isUnlocked ? 1 : 0.55,
                 }}
               >
                 <div
                   style={{
-                    width: 50,
-                    height: 50,
-                    borderRadius: 16,
-                    background: isUnlocked ? 'rgba(245, 158, 11, 0.2)' : 'rgba(255,255,255,0.05)',
+                    width: 42,
+                    height: 42,
+                    borderRadius: 10,
+                    background: isUnlocked ? 'rgba(245, 158, 11, 0.15)' : 'rgba(255, 255, 255, 0.04)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '1.8rem',
+                    color: isUnlocked ? '#facc15' : '#64748b',
                     flexShrink: 0,
                   }}
                 >
-                  {isUnlocked ? ach.icon : <Lock size={20} color="#94a3b8" />}
+                  {isUnlocked ? <Award size={20} /> : <Lock size={16} />}
                 </div>
 
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ fontSize: '1rem', fontWeight: 900, color: isUnlocked ? '#facc15' : '#94a3b8' }}>
+                    <div style={{ fontSize: '0.92rem', fontWeight: 800, color: isUnlocked ? '#f8fafc' : '#94a3b8' }}>
                       {ach.title}
                     </div>
                     {isUnlocked && (
                       <span
                         style={{
-                          fontSize: '0.7rem',
+                          fontSize: '0.68rem',
                           color: '#facc15',
-                          background: 'rgba(245, 158, 11, 0.15)',
+                          background: 'rgba(245, 158, 11, 0.12)',
                           padding: '2px 8px',
                           borderRadius: 6,
-                          fontWeight: 800,
+                          fontWeight: 700,
                           display: 'inline-flex',
                           alignItems: 'center',
                           gap: 4,
                         }}
                       >
-                        <CheckCircle2 size={12} /> Unlocked
+                        <CheckCircle2 size={11} /> Earned
                       </span>
                     )}
                   </div>
-                  <p style={{ margin: '4px 0 0 0', fontSize: '0.82rem', color: '#cbd5e1' }}>{ach.description}</p>
+                  <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: '#94a3b8' }}>{ach.description}</p>
                 </div>
               </div>
             );

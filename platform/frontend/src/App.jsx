@@ -18,6 +18,12 @@ export default function App() {
   const { appMode, activeActivity, isActivityModalOpen, setActivityModalOpen } = useGameStore();
   const currentAdventureScreen = useAdventureStore((s) => s.currentScreen);
 
+  // Clean layout controller: Only show the standalone TopNavigation when inside Kepler Outpost or when specifically needed.
+  // In the AdventureHub, the single unified Shotgear navigation bar governs the entire view.
+  // In 3D Skating, the full-screen immersive view with clean gaming HUD takes over.
+  const isHubView = appMode === "story" && activeActivity === "skating" && currentAdventureScreen === "hub";
+  const isSkatingGameView = appMode === "story" && activeActivity === "skating" && currentAdventureScreen === "skating-world";
+
   return (
     <div
       className="prism-root"
@@ -28,13 +34,22 @@ export default function App() {
         height: "100vh",
         overflow: "hidden",
         position: "relative",
+        background: "#070a13",
       }}
     >
-      {/* ── High-Tech Top Navigation Bar ── */}
-      <TopNavigation />
+      {/* ── Top Navigation Bar: Shown only in Kepler Outpost or Lab Workbench ── */}
+      {!isHubView && !isSkatingGameView && <TopNavigation />}
 
       {/* ── Main Platform Viewport ── */}
-      <main style={{ flex: 1, position: "relative", width: "100%", height: "calc(100vh - 52px)", overflow: "hidden" }}>
+      <main
+        style={{
+          flex: 1,
+          position: "relative",
+          width: "100%",
+          height: isHubView || isSkatingGameView ? "100vh" : "calc(100vh - 52px)",
+          overflow: "hidden",
+        }}
+      >
         {appMode === "story" ? (
           activeActivity === "skating" ? (
             /* ── 1A. SCIENCE ADVENTURE: SKATING WORLD & ADVENTURE HUB ── */
@@ -44,7 +59,7 @@ export default function App() {
               <SkatingWorldView />
             )
           ) : (
-            /* ── 1B. EXISTING ACTIVITY: KEPLER-186F OUTPOST THETA (PHY-001) ── */
+            /* ── 1B. KEPLER-186F OUTPOST THETA (PHY-001) ── */
             <div style={{ width: "100%", height: "100%", position: "relative" }}>
               <GameCanvas />
               <GameHUD />
@@ -60,7 +75,7 @@ export default function App() {
         )}
       </main>
 
-      {/* ── Physics World Activity Selector Modal (Switcher) ── */}
+      {/* ── Physics World Activity Selector Modal ── */}
       <ActivitySelectorModal
         isOpen={isActivityModalOpen}
         onClose={() => setActivityModalOpen(false)}

@@ -13,15 +13,33 @@ export default function SkateParkEnvironment() {
     footballPosition,
   } = useAdventureStore();
 
-  const footballRef = useRef<THREE.Group>(null);
+  const footballGroupRef = useRef<THREE.Group>(null);
+  const footballMeshRef = useRef<THREE.Mesh>(null);
   const starRefs = useRef<(THREE.Group | null)[]>([]);
 
-  // 3 Golden Adventure Stars positions
+  // 3 Golden Adventure Emblems (Prisms)
   const starPositions: [number, number, number][] = useMemo(
     () => [
-      [6.5, 2.2, -12], // Star 1: On top of wooden ramp
-      [-6.0, 1.2, -2], // Star 2: Over the icy pond
-      [8.0, 1.0, 18],  // Star 3: In the park garden
+      [6.5, 2.2, -12], // Prism 1: Elevated Wooden Ramp
+      [-6.0, 1.2, -2], // Prism 2: Over the Frosted Ice Pond
+      [8.0, 1.0, 18],  // Prism 3: Beside the Pine Grove
+    ],
+    []
+  );
+
+  // Tree coordinates with natural randomized scales and rotations
+  const treeData = useMemo(
+    () => [
+      { pos: [-16, -20], scale: 1.15, rot: 0.4 },
+      { pos: [-17, -8], scale: 0.95, rot: 1.8 },
+      { pos: [-16, 8], scale: 1.25, rot: 3.1 },
+      { pos: [-18, 22], scale: 1.05, rot: 0.9 },
+      { pos: [-17, 34], scale: 1.3, rot: 2.4 },
+      { pos: [16, -22], scale: 1.2, rot: 1.2 },
+      { pos: [17, -6], scale: 1.0, rot: 2.7 },
+      { pos: [16, 10], scale: 1.35, rot: 0.3 },
+      { pos: [18, 24], scale: 0.9, rot: 4.1 },
+      { pos: [17, 36], scale: 1.15, rot: 1.5 },
     ],
     []
   );
@@ -29,13 +47,14 @@ export default function SkateParkEnvironment() {
   useFrame((state, delta) => {
     const t = state.clock.elapsedTime;
 
-    // Rotate the collectible stars
+    // Rotate and bob the collectible adventure prisms
     starRefs.current.forEach((ref, idx) => {
       if (ref && !starsCollected.includes(idx + 1)) {
-        ref.rotation.y = t * 2.5;
-        ref.position.y = starPositions[idx][1] + Math.sin(t * 3 + idx) * 0.15;
+        ref.rotation.y = t * 1.8;
+        ref.rotation.z = Math.sin(t * 2 + idx) * 0.15;
+        ref.position.y = starPositions[idx][1] + Math.sin(t * 2.5 + idx) * 0.12;
 
-        // Check if skater collected this star
+        // Check if skater collected this emblem
         const dx = skaterPosition[0] - ref.position.x;
         const dz = skaterPosition[2] - ref.position.z;
         const dist = Math.sqrt(dx * dx + dz * dz);
@@ -45,201 +64,249 @@ export default function SkateParkEnvironment() {
       }
     });
 
-    // Update football position from store
-    if (footballRef.current) {
-      footballRef.current.position.set(footballPosition[0], footballPosition[1], footballPosition[2]);
+    // Animate football position and realistic rolling rotation
+    if (footballGroupRef.current) {
+      footballGroupRef.current.position.set(footballPosition[0], footballPosition[1], footballPosition[2]);
     }
   });
 
   return (
     <group>
-      {/* ── 1. WARM SUNNY DAYLIGHT & SKY ── */}
-      <ambientLight intensity={0.7} color="#f0f9ff" />
+      {/* ── 1. ATMOSPHERIC LIGHTING & SKY ── */}
+      <ambientLight intensity={0.55} color="#cbd5e1" />
       <directionalLight
-        position={[30, 50, 25]}
-        intensity={2.0}
+        position={[35, 55, 30]}
+        intensity={1.85}
         color="#fffbeb"
         castShadow
         shadow-mapSize={[2048, 2048]}
-        shadow-camera-left={-35}
-        shadow-camera-right={35}
-        shadow-camera-top={50}
-        shadow-camera-bottom={-50}
+        shadow-camera-left={-40}
+        shadow-camera-right={40}
+        shadow-camera-top={55}
+        shadow-camera-bottom={-55}
+        shadow-bias={-0.0001}
       />
-      <hemisphereLight args={['#bae6fd', '#4ade80', 0.65]} />
+      <hemisphereLight args={['#93c5fd', '#1e293b', 0.5]} />
 
-      {/* Sky Sphere */}
+      {/* Atmospheric Horizon Fog */}
+      <fog attach="fog" args={['#0f172a', 35, 130]} />
+
+      {/* Atmospheric Sky Dome */}
       <mesh position={[0, 0, 0]}>
-        <sphereGeometry args={[200, 32, 16]} />
-        <meshBasicMaterial color="#38bdf8" side={THREE.BackSide} />
+        <sphereGeometry args={[180, 32, 16]} />
+        <meshBasicMaterial color="#0c1527" side={THREE.BackSide} />
       </mesh>
 
-      {/* Sun glow */}
-      <mesh position={[80, 110, 70]}>
-        <sphereGeometry args={[12, 16, 16]} />
-        <meshBasicMaterial color="#fde047" />
+      {/* Stylized Sun Glow */}
+      <mesh position={[85, 110, 75]}>
+        <sphereGeometry args={[8, 16, 16]} />
+        <meshBasicMaterial color="#fef08a" />
       </mesh>
 
-      {/* ── 2. GENERAL PARK BASE (Green Grass Lawn) ── */}
-      <mesh position={[0, -0.15, 0]} receiveShadow>
-        <boxGeometry args={[90, 0.3, 120]} />
-        <meshStandardMaterial color="#22c55e" roughness={0.85} />
+      {/* ── 2. PARK TERRAIN (Multi-Layered Ground) ── */}
+      {/* Outer Forest Meadow Base (Deep Natural Slate Green) */}
+      <mesh position={[0, -0.16, 0]} receiveShadow>
+        <boxGeometry args={[96, 0.3, 130]} />
+        <meshStandardMaterial color="#1a2e22" roughness={0.9} metalness={0.05} />
       </mesh>
 
-      {/* ── 3. MAIN CONCRETE SKATE PLAZA & TRACKS ── */}
-      {/* Central Wide Concrete Plaza */}
-      <mesh position={[0, 0.01, 0]} receiveShadow>
-        <boxGeometry args={[16, 0.04, 76]} />
-        <meshStandardMaterial color="#cbd5e1" roughness={0.45} metalness={0.15} />
+      {/* ── 3. MAIN CONCRETE SKATE PLAZA & STREET TRACKS ── */}
+      {/* Central Slate Concrete Skating Track */}
+      <mesh position={[0, 0.01, 2.0]} receiveShadow>
+        <boxGeometry args={[17.0, 0.05, 78]} />
+        <meshStandardMaterial color="#334155" roughness={0.55} metalness={0.15} />
       </mesh>
 
-      {/* Concrete Cross Paths */}
+      {/* Concrete Cross Paths (Walkways) */}
       <mesh position={[0, 0.015, -15]} receiveShadow>
-        <boxGeometry args={[36, 0.03, 10]} />
-        <meshStandardMaterial color="#94a3b8" roughness={0.5} />
+        <boxGeometry args={[38, 0.04, 8]} />
+        <meshStandardMaterial color="#475569" roughness={0.6} />
       </mesh>
       <mesh position={[0, 0.015, 15]} receiveShadow>
-        <boxGeometry args={[36, 0.03, 10]} />
-        <meshStandardMaterial color="#94a3b8" roughness={0.5} />
+        <boxGeometry args={[38, 0.04, 8]} />
+        <meshStandardMaterial color="#475569" roughness={0.6} />
       </mesh>
 
-      {/* Track Outer Safety Curbing */}
-      {[-8.2, 8.2].map((cx, i) => (
-        <mesh key={i} position={[cx, 0.08, 0]}>
-          <boxGeometry args={[0.4, 0.16, 76]} />
-          <meshStandardMaterial color="#64748b" roughness={0.6} />
-        </mesh>
+      {/* Perimeter Street Skate Curbing (Beveled Gray Stone) */}
+      {[-8.7, 8.7].map((cx, i) => (
+        <group key={i} position={[cx, 0.1, 2.0]}>
+          <mesh castShadow receiveShadow>
+            <boxGeometry args={[0.4, 0.2, 78]} />
+            <meshStandardMaterial color="#1e293b" roughness={0.7} />
+          </mesh>
+          {/* Metal Coping Edge on top of curb */}
+          <mesh position={[i === 0 ? 0.18 : -0.18, 0.1, 0]}>
+            <cylinderGeometry args={[0.025, 0.025, 78, 8]} />
+            <meshStandardMaterial color="#94a3b8" metalness={0.85} roughness={0.2} />
+          </mesh>
+        </group>
       ))}
 
-      {/* ── 4. ICY POND / SLIPPERY PATCH (Left side: X ≈ -6, Z between -8 and 4) ── */}
-      <group position={[-6.0, 0.03, -2.0]}>
-        {/* Ice Surface */}
-        <mesh receiveShadow>
-          <boxGeometry args={[5.2, 0.02, 16]} />
-          <meshStandardMaterial
-            color="#38bdf8"
-            roughness={0.06}
-            metalness={0.7}
-            emissive="#0284c7"
-            emissiveIntensity={0.25}
-          />
+      {/* ── 4. STAINLESS STEEL GRIND RAILS (Skate Park Feature) ── */}
+      {/* Left Center Grind Rail */}
+      <group position={[-2.5, 0.45, -5]}>
+        {/* Main Rail Tube */}
+        <mesh rotation={[Math.PI / 2, 0, 0]} castShadow>
+          <cylinderGeometry args={[0.045, 0.045, 12, 16]} />
+          <meshStandardMaterial color="#e2e8f0" metalness={0.92} roughness={0.18} />
         </mesh>
-        {/* Ice Frost Rim Border */}
-        <mesh position={[0, 0.015, 0]}>
-          <boxGeometry args={[5.4, 0.01, 16.2]} />
-          <meshBasicMaterial color="#e0f2fe" wireframe />
-        </mesh>
-        {/* Frosted Warning Snowflake Icons on Ground */}
-        {[-4, 0, 4].map((zOffset, i) => (
-          <mesh key={i} position={[0, 0.03, zOffset]} rotation={[-Math.PI / 2, 0, 0]}>
-            <ringGeometry args={[0.4, 0.7, 6]} />
-            <meshBasicMaterial color="#ffffff" transparent opacity={0.6} />
+        {/* Support Legs */}
+        {[-5, 0, 5].map((zLeg, i) => (
+          <mesh key={i} position={[0, -0.22, zLeg]} castShadow>
+            <cylinderGeometry args={[0.035, 0.035, 0.45, 12]} />
+            <meshStandardMaterial color="#64748b" metalness={0.8} roughness={0.3} />
           </mesh>
         ))}
       </group>
 
-      {/* ── 5. WOODEN RAMP & ELEVATED BOARDWALK (Right side: X ≈ 6.5, Z between -20 and -5) ── */}
+      {/* ── 5. QUARTERPIPE / BANKED RAMP TRANSITIONS ── */}
       <group position={[6.5, 0, -12.5]}>
-        {/* Sloped Incline Ramp */}
-        <mesh position={[0, 0.75, 0]} rotation={[0.1, 0, 0]} receiveShadow castShadow>
-          <boxGeometry args={[4.2, 0.15, 14]} />
-          <meshStandardMaterial color="#b45309" roughness={0.65} metalness={0.1} />
+        {/* Sloped Cedar Boardwalk Incline */}
+        <mesh position={[0, 0.72, 0]} rotation={[0.095, 0, 0]} receiveShadow castShadow>
+          <boxGeometry args={[4.4, 0.14, 15]} />
+          <meshStandardMaterial color="#78350f" roughness={0.65} metalness={0.1} />
         </mesh>
-        {/* Wooden Support Pillars */}
-        {[-1.8, 1.8].map((px, i) => (
+
+        {/* Individual Plank Seam Lines */}
+        {[-6, -4, -2, 0, 2, 4, 6].map((zp, i) => (
+          <mesh key={i} position={[0, 0.8 + zp * 0.015, zp]} rotation={[0.095, 0, 0]}>
+            <boxGeometry args={[4.35, 0.01, 0.04]} />
+            <meshBasicMaterial color="#451a03" />
+          </mesh>
+        ))}
+
+        {/* Heavy Timber Support Pillars */}
+        {[-1.9, 1.9].map((px, i) => (
           <group key={i}>
-            <mesh position={[px, 0.4, -4]} castShadow>
-              <cylinderGeometry args={[0.15, 0.15, 0.8, 8]} />
-              <meshStandardMaterial color="#78350f" />
+            <mesh position={[px, 0.4, -4.5]} castShadow>
+              <cylinderGeometry args={[0.12, 0.12, 0.8, 8]} />
+              <meshStandardMaterial color="#451a03" />
             </mesh>
-            <mesh position={[px, 0.75, 0]} castShadow>
-              <cylinderGeometry args={[0.15, 0.15, 1.5, 8]} />
-              <meshStandardMaterial color="#78350f" />
+            <mesh position={[px, 0.75, 0.5]} castShadow>
+              <cylinderGeometry args={[0.12, 0.12, 1.5, 8]} />
+              <meshStandardMaterial color="#451a03" />
             </mesh>
           </group>
         ))}
       </group>
 
-      {/* ── 6. MISSION 2: FOOTBALL & GREEN SAFE STOPPING ZONE ── */}
-      {/* Green Safe Stopping Zone (Z = 7 to 12) */}
-      <group position={[0, 0.035, 9.5]}>
+      {/* ── 6. FROSTED ICY POND (Semi-Translucent Specular Material) ── */}
+      <group position={[-6.0, 0.03, -2.0]}>
+        {/* Frosted Ice Surface */}
         <mesh receiveShadow>
-          <boxGeometry args={[15.6, 0.01, 5.0]} />
-          <meshStandardMaterial color="#10b981" transparent opacity={0.35} />
+          <boxGeometry args={[5.2, 0.03, 16]} />
+          <meshStandardMaterial
+            color="#e0f2fe"
+            roughness={0.06}
+            metalness={0.35}
+            transparent
+            opacity={0.88}
+            emissive="#0284c7"
+            emissiveIntensity={0.15}
+          />
         </mesh>
-        {/* Safe Stop Boundary Line */}
-        <mesh position={[0, 0.01, -2.5]}>
-          <boxGeometry args={[15.6, 0.02, 0.2]} />
-          <meshBasicMaterial color="#10b981" />
+
+        {/* Ice Sub-Surface Depth Bed */}
+        <mesh position={[0, -0.02, 0]}>
+          <boxGeometry args={[5.1, 0.02, 15.9]} />
+          <meshStandardMaterial color="#0369a1" roughness={0.3} />
         </mesh>
-        <mesh position={[0, 0.01, 2.5]}>
-          <boxGeometry args={[15.6, 0.02, 0.2]} />
-          <meshBasicMaterial color="#10b981" />
+
+        {/* Frosted Border Lip */}
+        <mesh position={[0, 0.02, 0]}>
+          <boxGeometry args={[5.35, 0.01, 16.2]} />
+          <meshBasicMaterial color="#ffffff" wireframe />
         </mesh>
       </group>
 
-      {/* Interactive Football (At Z = 12.5) */}
-      <group ref={footballRef} position={[footballPosition[0], footballPosition[1], footballPosition[2]]}>
-        {/* Football Sphere with Classic Hexagon pattern approximation */}
-        <mesh castShadow receiveShadow>
-          <sphereGeometry args={[0.38, 20, 20]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.4} />
+      {/* ── 7. MISSION 2: FOOTBALL & GREEN SAFE STOPPING ZONE ── */}
+      {/* Green Safe Stopping Target Zone (Z = 7 to 12) */}
+      <group position={[0, 0.035, 9.5]}>
+        {/* Subtle Checkered Glow Base */}
+        <mesh receiveShadow>
+          <boxGeometry args={[16.6, 0.01, 5.0]} />
+          <meshStandardMaterial color="#10b981" transparent opacity={0.25} />
         </mesh>
-        {/* Black Football Patches */}
-        {[-0.2, 0.2].map((ox, i) => (
-          <mesh key={i} position={[ox, 0.15, 0.15]}>
-            <boxGeometry args={[0.14, 0.14, 0.14]} />
-            <meshStandardMaterial color="#1e293b" roughness={0.3} />
+        {/* Zone Perimeter Line Stencils */}
+        <mesh position={[0, 0.01, -2.5]}>
+          <boxGeometry args={[16.6, 0.015, 0.15]} />
+          <meshBasicMaterial color="#34d399" />
+        </mesh>
+        <mesh position={[0, 0.01, 2.5]}>
+          <boxGeometry args={[16.6, 0.015, 0.15]} />
+          <meshBasicMaterial color="#34d399" />
+        </mesh>
+      </group>
+
+      {/* Interactive 3D Football (At Z = 12.5) */}
+      <group ref={footballGroupRef} position={[footballPosition[0], footballPosition[1], footballPosition[2]]}>
+        {/* Main Ball Sphere */}
+        <mesh ref={footballMeshRef} castShadow receiveShadow>
+          <sphereGeometry args={[0.38, 24, 24]} />
+          <meshStandardMaterial color="#f8fafc" roughness={0.35} />
+        </mesh>
+        {/* Black Geometric Pentagons */}
+        {[
+          [0, 0.35, 0.15],
+          [-0.2, 0.12, 0.28],
+          [0.2, 0.12, 0.28],
+          [-0.2, -0.15, 0.25],
+          [0.2, -0.15, 0.25],
+        ].map(([px, py, pz], i) => (
+          <mesh key={i} position={[px, py, pz]}>
+            <circleGeometry args={[0.09, 5]} />
+            <meshStandardMaterial color="#0f172a" roughness={0.5} />
           </mesh>
         ))}
       </group>
 
-      {/* ── 7. STARTING ARCH & FINISH GATES ── */}
+      {/* ── 8. STARTING ARCH & FINISH GATES ── */}
       {/* Starting Arch (Z = -22) */}
       <group position={[0, 0, -22]}>
-        {/* Checkered Start Line */}
-        <mesh position={[0, 0.04, 0]}>
-          <boxGeometry args={[16.0, 0.02, 0.8]} />
-          <meshBasicMaterial color="#ffffff" />
+        {/* White Road Stencil Start Line */}
+        <mesh position={[0, 0.038, 0]}>
+          <boxGeometry args={[16.8, 0.015, 0.7]} />
+          <meshBasicMaterial color="#f8fafc" />
         </mesh>
-        {/* Arch Pillars */}
-        <mesh position={[-8.5, 2.8, 0]} castShadow>
-          <cylinderGeometry args={[0.25, 0.3, 5.6, 12]} />
-          <meshStandardMaterial color="#3b82f6" metalness={0.6} />
+        {/* Minimalist Matte Black Steel Arch Columns */}
+        <mesh position={[-8.8, 2.8, 0]} castShadow>
+          <cylinderGeometry args={[0.18, 0.22, 5.6, 16]} />
+          <meshStandardMaterial color="#1e293b" metalness={0.7} roughness={0.3} />
         </mesh>
-        <mesh position={[8.5, 2.8, 0]} castShadow>
-          <cylinderGeometry args={[0.25, 0.3, 5.6, 12]} />
-          <meshStandardMaterial color="#3b82f6" metalness={0.6} />
+        <mesh position={[8.8, 2.8, 0]} castShadow>
+          <cylinderGeometry args={[0.18, 0.22, 5.6, 16]} />
+          <meshStandardMaterial color="#1e293b" metalness={0.7} roughness={0.3} />
         </mesh>
-        {/* Arch Header */}
+        {/* Overhead Truss Header */}
         <mesh position={[0, 5.2, 0]} castShadow>
-          <boxGeometry args={[18.0, 1.1, 0.4]} />
-          <meshStandardMaterial color="#1d4ed8" />
+          <boxGeometry args={[18.2, 0.8, 0.3]} />
+          <meshStandardMaterial color="#0f172a" metalness={0.8} roughness={0.25} />
         </mesh>
-        <mesh position={[0, 5.2, 0.22]}>
-          <boxGeometry args={[17.2, 0.7, 0.04]} />
-          <meshBasicMaterial color="#facc15" />
+        <mesh position={[0, 5.2, 0.16]}>
+          <boxGeometry args={[17.6, 0.4, 0.02]} />
+          <meshBasicMaterial color="#00d2ff" />
         </mesh>
       </group>
 
-      {/* Finish Arch & Target (Z = 28) */}
+      {/* Finish Target Line (Z = 28) */}
       <group position={[0, 0, 28]}>
-        <mesh position={[0, 0.04, 0]}>
-          <boxGeometry args={[16.0, 0.02, 1.2]} />
-          <meshStandardMaterial color="#f59e0b" />
+        {/* Finish Line Stripe */}
+        <mesh position={[0, 0.038, 0]}>
+          <boxGeometry args={[16.8, 0.015, 1.0]} />
+          <meshStandardMaterial color="#f59e0b" roughness={0.3} />
         </mesh>
-        {/* Red/White Safety Foam Crash Barrier */}
-        <mesh position={[0, 0.7, 1.2]} castShadow>
-          <boxGeometry args={[16.4, 1.4, 0.8]} />
-          <meshStandardMaterial color="#dc2626" roughness={0.6} />
+        {/* Low-Profile Impact Cushion Barrier */}
+        <mesh position={[0, 0.65, 1.2]} castShadow>
+          <boxGeometry args={[17.2, 1.3, 0.6]} />
+          <meshStandardMaterial color="#dc2626" roughness={0.65} />
         </mesh>
-        <mesh position={[0, 0.7, 1.62]}>
-          <boxGeometry args={[15.8, 0.3, 0.05]} />
+        <mesh position={[0, 0.65, 1.52]}>
+          <boxGeometry args={[16.6, 0.25, 0.03]} />
           <meshBasicMaterial color="#fef08a" />
         </mesh>
       </group>
 
-      {/* ── 8. THREE GOLDEN ADVENTURE STARS (Mission 5 & Exploration) ── */}
+      {/* ── 9. THREE ADVENTURE PRISMS (Collectible Emblems) ── */}
       {starPositions.map((pos, idx) => {
         const isCollected = starsCollected.includes(idx + 1);
         if (isCollected) return null;
@@ -249,79 +316,90 @@ export default function SkateParkEnvironment() {
             ref={(el) => (starRefs.current[idx] = el)}
             position={[pos[0], pos[1], pos[2]]}
           >
-            {/* Glowing Golden Star Mesh */}
+            {/* Geometric Optical Prism Emblem */}
             <mesh castShadow>
-              <octahedronGeometry args={[0.55, 0]} />
+              <octahedronGeometry args={[0.48, 0]} />
               <meshStandardMaterial
-                color="#facc15"
-                emissive="#eab308"
-                emissiveIntensity={0.8}
-                metalness={0.8}
-                roughness={0.2}
+                color="#00d2ff"
+                emissive="#0284c7"
+                emissiveIntensity={0.6}
+                metalness={0.85}
+                roughness={0.15}
+                wireframe={false}
               />
             </mesh>
-            {/* Pulsing Light */}
-            <pointLight color="#fde047" intensity={1.5} distance={4} />
+            <mesh scale={[1.2, 1.2, 1.2]}>
+              <octahedronGeometry args={[0.48, 0]} />
+              <meshBasicMaterial color="#38bdf8" wireframe transparent opacity={0.4} />
+            </mesh>
+            <pointLight color="#00d2ff" intensity={1.2} distance={3.5} />
           </group>
         );
       })}
 
-      {/* ── 9. PARK DECORATIONS (Trees, Benches, Cones) ── */}
-      {/* Trees along borders */}
-      {[
-        [-14, -18], [-15, 0], [-14, 16], [-16, 30],
-        [14, -18], [15, 2], [14, 20], [16, 32],
-      ].map(([tx, tz], i) => (
-        <group key={i} position={[tx, 0, tz]}>
+      {/* ── 10. PARK FLORA & HARDSCAPE (Hand-Crafted Low-Poly Trees & Benches) ── */}
+      {treeData.map((tree, i) => (
+        <group key={i} position={[tree.pos[0], 0, tree.pos[1]]} scale={[tree.scale, tree.scale, tree.scale]} rotation={[0, tree.rot, 0]}>
           {/* Trunk */}
-          <mesh position={[0, 1.4, 0]} castShadow>
-            <cylinderGeometry args={[0.3, 0.45, 2.8, 8]} />
-            <meshStandardMaterial color="#713f12" />
+          <mesh position={[0, 1.2, 0]} castShadow>
+            <cylinderGeometry args={[0.22, 0.35, 2.4, 8]} />
+            <meshStandardMaterial color="#382414" roughness={0.9} />
           </mesh>
-          {/* Foliage Cones */}
-          <mesh position={[0, 3.8, 0]} castShadow>
-            <coneGeometry args={[2.0, 3.2, 8]} />
+          {/* Canopy Tiers */}
+          <mesh position={[0, 3.2, 0]} castShadow>
+            <coneGeometry args={[1.8, 2.6, 7]} />
+            <meshStandardMaterial color="#14532d" roughness={0.75} />
+          </mesh>
+          <mesh position={[0, 4.6, 0]} castShadow>
+            <coneGeometry args={[1.4, 2.2, 7]} />
+            <meshStandardMaterial color="#166534" roughness={0.75} />
+          </mesh>
+          <mesh position={[0, 5.8, 0]} castShadow>
+            <coneGeometry args={[0.9, 1.8, 7]} />
             <meshStandardMaterial color="#15803d" roughness={0.7} />
           </mesh>
-          <mesh position={[0, 5.4, 0]} castShadow>
-            <coneGeometry args={[1.5, 2.5, 8]} />
-            <meshStandardMaterial color="#16a34a" roughness={0.7} />
-          </mesh>
         </group>
       ))}
 
-      {/* Park Benches */}
-      {[-10.5, 10.5].map((bx, i) => (
-        <group key={i} position={[bx, 0.4, 0]}>
-          <mesh castShadow>
-            <boxGeometry args={[1.4, 0.45, 3.0]} />
-            <meshStandardMaterial color="#92400e" roughness={0.6} />
-          </mesh>
-        </group>
-      ))}
-
-      {/* Orange Safety Traffic Cones */}
+      {/* Park Street Lamps (Warm Night/Day Illuminators) */}
       {[
-        [-3.0, -10], [3.0, -10],
-        [-3.0, 5], [3.0, 5],
-        [0, 18],
-      ].map(([cx, cz], i) => (
-        <group key={i} position={[cx, 0, cz]}>
-          {/* Base */}
-          <mesh position={[0, 0.05, 0]} castShadow>
-            <boxGeometry args={[0.5, 0.1, 0.5]} />
-            <meshStandardMaterial color="#ea580c" />
+        [-9.5, -12], [-9.5, 12],
+        [9.5, -12], [9.5, 12],
+      ].map(([lx, lz], i) => (
+        <group key={i} position={[lx, 0, lz]}>
+          {/* Pole */}
+          <mesh position={[0, 2.4, 0]} castShadow>
+            <cylinderGeometry args={[0.06, 0.08, 4.8, 8]} />
+            <meshStandardMaterial color="#0f172a" metalness={0.8} />
           </mesh>
-          {/* Cone */}
-          <mesh position={[0, 0.45, 0]} castShadow>
-            <coneGeometry args={[0.2, 0.8, 12]} />
-            <meshStandardMaterial color="#f97316" />
+          {/* Arm */}
+          <mesh position={[lx > 0 ? -0.4 : 0.4, 4.7, 0]}>
+            <boxGeometry args={[0.8, 0.06, 0.06]} />
+            <meshStandardMaterial color="#0f172a" />
           </mesh>
-          {/* White Stripe */}
-          <mesh position={[0, 0.45, 0]}>
-            <cylinderGeometry args={[0.13, 0.15, 0.2, 12]} />
-            <meshBasicMaterial color="#ffffff" />
+          {/* Fixture */}
+          <mesh position={[lx > 0 ? -0.8 : 0.8, 4.6, 0]}>
+            <sphereGeometry args={[0.16, 12, 12]} />
+            <meshBasicMaterial color="#fef08a" />
           </mesh>
+          <pointLight position={[lx > 0 ? -0.8 : 0.8, 4.5, 0]} color="#fef08a" intensity={0.8} distance={8} />
+        </group>
+      ))}
+
+      {/* Dark Wood & Cast Iron Park Benches */}
+      {[-10.2, 10.2].map((bx, i) => (
+        <group key={i} position={[bx, 0.35, 0]}>
+          <mesh castShadow>
+            <boxGeometry args={[1.2, 0.35, 2.6]} />
+            <meshStandardMaterial color="#451a03" roughness={0.65} />
+          </mesh>
+          {/* Metal Leg Frames */}
+          {[-1.0, 1.0].map((lz, j) => (
+            <mesh key={j} position={[0, -0.15, lz]}>
+              <boxGeometry args={[1.22, 0.35, 0.08]} />
+              <meshStandardMaterial color="#0f172a" metalness={0.8} />
+            </mesh>
+          ))}
         </group>
       ))}
     </group>

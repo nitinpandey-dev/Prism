@@ -1,6 +1,6 @@
 import { useAdventureStore } from '../../stores/useAdventureStore';
 import { MISSIONS } from '../../types/adventure';
-import { Play, ArrowLeft, Lightbulb } from 'lucide-react';
+import { Play, ArrowLeft, Lightbulb, Target } from 'lucide-react';
 
 export default function MissionBriefingModal() {
   const { activeMissionId, missionState, launchMissionGameplay, abandonMission } = useAdventureStore();
@@ -16,8 +16,8 @@ export default function MissionBriefingModal() {
         position: 'absolute',
         inset: 0,
         zIndex: 50,
-        background: 'rgba(15, 23, 42, 0.75)',
-        backdropFilter: 'blur(8px)',
+        background: 'rgba(7, 10, 19, 0.88)',
+        backdropFilter: 'blur(16px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -27,22 +27,21 @@ export default function MissionBriefingModal() {
       <div
         style={{
           width: '100%',
-          maxWidth: 520,
-          background: 'linear-gradient(145deg, #1e293b, #0f172a)',
-          border: '2px solid rgba(56, 189, 248, 0.4)',
-          borderRadius: 28,
-          boxShadow: '0 20px 50px rgba(0,0,0,0.6), 0 0 30px rgba(2, 132, 199, 0.25)',
+          maxWidth: 500,
+          background: '#0d1322',
+          border: '1px solid rgba(255, 255, 255, 0.12)',
+          borderRadius: 20,
+          boxShadow: '0 24px 64px rgba(0, 0, 0, 0.8)',
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
-          animation: 'fadeIn 0.25s ease-out',
         }}
       >
-        {/* Header Banner */}
+        {/* Header */}
         <div
           style={{
-            background: 'linear-gradient(135deg, #0284c7, #6366f1)',
-            padding: '24px 28px',
+            background: 'linear-gradient(135deg, #09203f, #1e3c72)',
+            padding: '22px 26px',
             color: '#ffffff',
             display: 'flex',
             alignItems: 'center',
@@ -52,70 +51,71 @@ export default function MissionBriefingModal() {
           <div>
             <div
               style={{
-                fontSize: '0.75rem',
-                fontWeight: 900,
+                fontSize: '0.7rem',
+                fontWeight: 800,
                 letterSpacing: '0.1em',
-                color: '#facc15',
+                color: '#00d2ff',
                 textTransform: 'uppercase',
               }}
             >
-              MISSION {mission.number}
+              MISSION 0{mission.number}
             </div>
-            <h2 style={{ margin: '4px 0 0 0', fontSize: '1.4rem', fontWeight: 900 }}>{mission.title}</h2>
+            <h2 style={{ margin: '4px 0 0 0', fontSize: '1.35rem', fontWeight: 900, letterSpacing: '-0.02em' }}>
+              {mission.title}
+            </h2>
           </div>
-          <div style={{ fontSize: '2.5rem' }}>{mission.thumbnail}</div>
+          <Target size={28} color="#00d2ff" />
         </div>
 
-        {/* Content Body */}
-        <div style={{ padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {/* Story Scenario */}
+        {/* Body */}
+        <div style={{ padding: '24px 26px', display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
-            <div style={{ fontSize: '0.75rem', color: '#38bdf8', fontWeight: 800, textTransform: 'uppercase' }}>
-              The Scenario
+            <div style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>
+              Scenario
             </div>
-            <p style={{ margin: '6px 0 0 0', color: '#f8fafc', fontSize: '0.95rem', lineHeight: 1.5 }}>
+            <p style={{ margin: '6px 0 0 0', color: '#cbd5e1', fontSize: '0.9rem', lineHeight: 1.55 }}>
               {mission.story}
             </p>
           </div>
 
-          {/* Objective Box */}
+          {/* Goal */}
           <div
             style={{
-              background: 'rgba(56, 189, 248, 0.1)',
-              border: '1px solid rgba(56, 189, 248, 0.3)',
-              borderRadius: 16,
-              padding: '12px 18px',
+              background: 'rgba(0, 210, 255, 0.06)',
+              border: '1px solid rgba(0, 210, 255, 0.25)',
+              borderRadius: 12,
+              padding: '12px 16px',
             }}
           >
-            <div style={{ fontSize: '0.75rem', color: '#facc15', fontWeight: 800, textTransform: 'uppercase' }}>
-              🎯 Your Goal
+            <div style={{ fontSize: '0.7rem', color: '#00d2ff', fontWeight: 800, textTransform: 'uppercase' }}>
+              Objective
             </div>
-            <div style={{ color: '#ffffff', fontSize: '0.95rem', fontWeight: 700, marginTop: 4 }}>
+            <div style={{ color: '#ffffff', fontSize: '0.9rem', fontWeight: 700, marginTop: 4 }}>
               {mission.objective}
             </div>
           </div>
 
-          {/* Friendly Hint */}
+          {/* Hint */}
           <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-            <Lightbulb size={18} color="#facc15" style={{ flexShrink: 0, marginTop: 2 }} />
-            <span style={{ fontSize: '0.85rem', color: '#94a3b8', fontStyle: 'italic' }}>
-              Tip: {mission.hint}
+            <Lightbulb size={16} color="#facc15" style={{ flexShrink: 0, marginTop: 2 }} />
+            <span style={{ fontSize: '0.82rem', color: '#94a3b8' }}>
+              Strategy: {mission.hint}
             </span>
           </div>
 
           {/* Buttons */}
-          <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+          <div style={{ display: 'flex', gap: 12, marginTop: 6 }}>
             <button
               onClick={abandonMission}
               style={{
                 flex: 1,
                 padding: '12px',
-                borderRadius: 16,
-                background: 'rgba(51, 65, 85, 0.6)',
-                border: '1px solid rgba(255,255,255,0.15)',
+                borderRadius: 10,
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.12)',
                 color: '#cbd5e1',
                 fontWeight: 700,
-                fontSize: '0.9rem',
+                fontSize: '0.85rem',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -123,7 +123,7 @@ export default function MissionBriefingModal() {
                 gap: 6,
               }}
             >
-              <ArrowLeft size={16} />
+              <ArrowLeft size={15} />
               <span>Free Play</span>
             </button>
 
@@ -131,23 +131,22 @@ export default function MissionBriefingModal() {
               onClick={launchMissionGameplay}
               style={{
                 flex: 2,
-                padding: '14px',
-                borderRadius: 16,
-                background: 'linear-gradient(135deg, #0284c7, #2563eb)',
+                padding: '12px',
+                borderRadius: 10,
+                background: '#00d2ff',
                 border: 'none',
-                color: '#ffffff',
-                fontWeight: 900,
-                fontSize: '1rem',
+                color: '#070a13',
+                fontWeight: 800,
+                fontSize: '0.92rem',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: 8,
-                boxShadow: '0 6px 20px rgba(2, 132, 199, 0.45)',
               }}
             >
-              <Play size={18} fill="#ffffff" />
-              <span>Let's Skate!</span>
+              <Play size={16} fill="#070a13" />
+              <span>Start Mission</span>
             </button>
           </div>
         </div>

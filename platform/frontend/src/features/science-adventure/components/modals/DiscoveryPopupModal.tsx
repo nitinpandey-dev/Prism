@@ -1,5 +1,5 @@
 import { useAdventureStore } from '../../stores/useAdventureStore';
-import { Sparkles, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Sparkles, CheckCircle2, ArrowRight, Lightbulb } from 'lucide-react';
 
 export default function DiscoveryPopupModal() {
   const { activeDiscoveryModal, closeDiscoveryModal } = useAdventureStore();
@@ -12,8 +12,8 @@ export default function DiscoveryPopupModal() {
         position: 'absolute',
         inset: 0,
         zIndex: 60,
-        background: 'rgba(15, 23, 42, 0.85)',
-        backdropFilter: 'blur(12px)',
+        background: 'rgba(7, 10, 19, 0.88)',
+        backdropFilter: 'blur(16px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -23,25 +23,24 @@ export default function DiscoveryPopupModal() {
       <div
         style={{
           width: '100%',
-          maxWidth: 540,
-          background: 'linear-gradient(145deg, #1e293b, #0f172a)',
-          border: '3px solid #38bdf8',
-          borderRadius: 32,
-          boxShadow: '0 25px 60px rgba(0,0,0,0.7), 0 0 50px rgba(56, 189, 248, 0.35)',
+          maxWidth: 520,
+          background: '#0d1322',
+          border: '1px solid rgba(0, 210, 255, 0.4)',
+          borderRadius: 20,
+          boxShadow: '0 24px 64px rgba(0, 0, 0, 0.8), 0 0 32px rgba(0, 210, 255, 0.2)',
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           textAlign: 'center',
-          animation: 'popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
         }}
       >
-        {/* Celebration Top Banner */}
+        {/* Clean Header */}
         <div
           style={{
             width: '100%',
-            background: 'linear-gradient(135deg, #0284c7, #8b5cf6)',
-            padding: '24px 20px',
+            background: 'linear-gradient(135deg, #09203f, #1e3c72)',
+            padding: '22px 24px',
             color: '#ffffff',
             display: 'flex',
             flexDirection: 'column',
@@ -49,17 +48,13 @@ export default function DiscoveryPopupModal() {
             position: 'relative',
           }}
         >
-          {/* Confetti Emojis */}
-          <div style={{ position: 'absolute', left: 24, top: 20, fontSize: '1.6rem' }}>🎉</div>
-          <div style={{ position: 'absolute', right: 24, top: 20, fontSize: '1.6rem' }}>✨</div>
-
           <div
             style={{
-              background: 'rgba(255, 255, 255, 0.2)',
+              background: 'rgba(255, 255, 255, 0.12)',
               borderRadius: 20,
-              padding: '4px 14px',
-              fontSize: '0.75rem',
-              fontWeight: 900,
+              padding: '4px 12px',
+              fontSize: '0.72rem',
+              fontWeight: 800,
               letterSpacing: '0.08em',
               textTransform: 'uppercase',
               display: 'inline-flex',
@@ -67,19 +62,19 @@ export default function DiscoveryPopupModal() {
               gap: 6,
             }}
           >
-            <CheckCircle2 size={14} color="#facc15" />
-            <span>MISSION COMPLETE!</span>
+            <CheckCircle2 size={13} color="#00d2ff" />
+            <span>MISSION COMPLETE</span>
           </div>
 
-          <h2 style={{ margin: '8px 0 0 0', fontSize: '1.6rem', fontWeight: 900 }}>
-            You Discovered Something! 💡
+          <h2 style={{ margin: '8px 0 0 0', fontSize: '1.4rem', fontWeight: 900, letterSpacing: '-0.02em' }}>
+            Scientific Discovery Unlocked
           </h2>
         </div>
 
         {/* Discovery Body */}
         <div
           style={{
-            padding: '28px 32px',
+            padding: '24px 28px',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -94,50 +89,53 @@ export default function DiscoveryPopupModal() {
               display: 'flex',
               alignItems: 'center',
               gap: 12,
-              background: 'rgba(56, 189, 248, 0.1)',
-              border: `2px solid ${activeDiscoveryModal.color}`,
-              borderRadius: 20,
-              padding: '10px 22px',
+              background: 'rgba(0, 210, 255, 0.08)',
+              border: `1px solid ${activeDiscoveryModal.color}60`,
+              borderRadius: 14,
+              padding: '10px 20px',
+              width: '100%',
+              boxSizing: 'border-box',
+              textAlign: 'left',
             }}
           >
-            <span style={{ fontSize: '2rem' }}>{activeDiscoveryModal.icon}</span>
-            <div style={{ textAlign: 'left' }}>
-              <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>
-                Science Discovery Unlocked
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: '0.68rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>
+                PHYSICAL PRINCIPLE
               </div>
-              <div style={{ fontSize: '1.25rem', fontWeight: 900, color: activeDiscoveryModal.color }}>
+              <div style={{ fontSize: '1.2rem', fontWeight: 900, color: activeDiscoveryModal.color }}>
                 {activeDiscoveryModal.conceptName}
               </div>
             </div>
           </div>
 
-          {/* Child-Friendly Narrative Explanation */}
-          <div style={{ background: 'rgba(30, 41, 59, 0.6)', borderRadius: 20, padding: '16px 20px', width: '100%' }}>
-            <h4 style={{ margin: '0 0 8px 0', fontSize: '1.05rem', color: '#f8fafc', fontWeight: 800 }}>
+          {/* Narrative Explanation */}
+          <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.06)', borderRadius: 14, padding: '16px', width: '100%', boxSizing: 'border-box' }}>
+            <h4 style={{ margin: '0 0 6px 0', fontSize: '0.98rem', color: '#f8fafc', fontWeight: 800 }}>
               {activeDiscoveryModal.headline}
             </h4>
-            <p style={{ margin: 0, color: '#cbd5e1', fontSize: '0.92rem', lineHeight: 1.6, textAlign: 'left' }}>
+            <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.85rem', lineHeight: 1.55, textAlign: 'left' }}>
               {activeDiscoveryModal.explanation}
             </p>
           </div>
 
-          {/* Real World Fun Fact */}
+          {/* Real World Fact */}
           <div
             style={{
               display: 'flex',
               alignItems: 'flex-start',
               gap: 10,
               textAlign: 'left',
-              background: 'rgba(250, 204, 21, 0.1)',
-              border: '1px solid rgba(250, 204, 21, 0.3)',
-              borderRadius: 16,
-              padding: '12px 16px',
+              background: 'rgba(245, 158, 11, 0.08)',
+              border: '1px solid rgba(245, 158, 11, 0.25)',
+              borderRadius: 12,
+              padding: '12px 14px',
               width: '100%',
+              boxSizing: 'border-box',
             }}
           >
-            <Sparkles size={20} color="#facc15" style={{ flexShrink: 0, marginTop: 2 }} />
-            <div style={{ fontSize: '0.85rem', color: '#fef08a', lineHeight: 1.4 }}>
-              <strong>Did You Know? </strong> {activeDiscoveryModal.funFact}
+            <Lightbulb size={18} color="#facc15" style={{ flexShrink: 0, marginTop: 1 }} />
+            <div style={{ fontSize: '0.8rem', color: '#fef08a', lineHeight: 1.45 }}>
+              <strong>Real-World Application: </strong> {activeDiscoveryModal.funFact}
             </div>
           </div>
 
@@ -146,24 +144,23 @@ export default function DiscoveryPopupModal() {
             onClick={closeDiscoveryModal}
             style={{
               width: '100%',
-              padding: '16px',
-              borderRadius: 20,
-              background: 'linear-gradient(135deg, #0284c7, #2563eb)',
+              padding: '14px',
+              borderRadius: 12,
+              background: '#00d2ff',
               border: 'none',
-              color: '#ffffff',
-              fontWeight: 900,
-              fontSize: '1.05rem',
+              color: '#070a13',
+              fontWeight: 800,
+              fontSize: '0.92rem',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: 10,
-              boxShadow: '0 6px 25px rgba(2, 132, 199, 0.5)',
-              marginTop: 6,
+              gap: 8,
+              marginTop: 4,
             }}
           >
-            <span>Add to My Discoveries (+150 XP)</span>
-            <ArrowRight size={20} />
+            <span>Save to Discoveries Journal (+150 XP)</span>
+            <ArrowRight size={16} />
           </button>
         </div>
       </div>
