@@ -45,16 +45,18 @@ export default function FunctionVisualizerSim() {
   const curr = FUNCTION_DEFS[funcType];
   const equationStr = curr.getEquation(paramA, paramB);
 
-  // Mouse hover listener
-  const handleMouseMove = (e) => {
+  // Mouse & Touch pointer hover listener (with 1:1 canvas coordinate scaling)
+  const handlePointerHover = (clientX, clientY) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
-
     const width = canvas.width;
     const height = canvas.height;
+
+    // Correct scaling between CSS layout pixels and internal canvas resolution
+    const mx = (clientX - rect.left) * (width / rect.width);
+    const my = (clientY - rect.top) * (height / rect.height);
+
     const cx = width / 2;
     const cy = height / 2;
 
@@ -75,6 +77,13 @@ export default function FunctionVisualizerSim() {
       curveY,
       slope,
     });
+  };
+
+  const handleMouseMove = (e) => handlePointerHover(e.clientX, e.clientY);
+  const handleTouchMove = (e) => {
+    if (e.touches && e.touches.length > 0) {
+      handlePointerHover(e.touches[0].clientX, e.touches[0].clientY);
+    }
   };
 
   const handleMouseLeave = () => setHoverPos(null);
@@ -238,6 +247,8 @@ export default function FunctionVisualizerSim() {
         className="sim-canvas-container"
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleMouseLeave}
       >
         <canvas
           ref={canvasRef}

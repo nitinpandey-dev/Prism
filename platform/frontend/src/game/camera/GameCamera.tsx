@@ -6,8 +6,7 @@ import { usePhysicsStore } from '../../stores/usePhysicsStore';
 
 export default function GameCamera() {
   const { camera } = useThree();
-  const { player, cameraView, isConsoleOpen } = useGameStore();
-  const { isFiring, currentProjectilePos } = usePhysicsStore();
+  const isConsoleOpen = useGameStore((s) => s.isConsoleOpen);
 
   // Mouse orbit variables
   const orbitYaw = useRef(0);
@@ -53,9 +52,16 @@ export default function GameCamera() {
   const currentLookAt = useRef(new THREE.Vector3(0, 1.5, -10));
 
   useFrame((_, delta) => {
-    const px = player.position[0];
-    const py = player.position[1];
-    const pz = player.position[2];
+    const dt = Math.min(delta, 0.05);
+    const gameState = useGameStore.getState();
+    const physicsState = usePhysicsStore.getState();
+    const playerPos = gameState.player.position;
+    const px = playerPos[0];
+    const py = playerPos[1];
+    const pz = playerPos[2];
+    const cameraView = gameState.cameraView;
+    const isFiring = physicsState.isFiring;
+    const currentProjectilePos = physicsState.currentProjectilePos;
 
     const targetCamPos = new THREE.Vector3();
     const targetLookAt = new THREE.Vector3();
@@ -90,8 +96,8 @@ export default function GameCamera() {
 
     // Smooth spring-damping interpolation
     const lerpSpeed = cameraView === 'terminal_view' ? 4.0 : 7.0;
-    currentCamPos.current.lerp(targetCamPos, lerpSpeed * delta);
-    currentLookAt.current.lerp(targetLookAt, lerpSpeed * delta);
+    currentCamPos.current.lerp(targetCamPos, lerpSpeed * dt);
+    currentLookAt.current.lerp(targetLookAt, lerpSpeed * dt);
 
     camera.position.copy(currentCamPos.current);
     camera.lookAt(currentLookAt.current);

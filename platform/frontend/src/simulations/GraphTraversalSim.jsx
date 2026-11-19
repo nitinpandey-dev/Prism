@@ -394,12 +394,12 @@ export default function GraphTraversalSim() {
         </div>
         <div className="sim-canvas-overlay-badge" style={{ right: "12px", left: "auto" }}>
           {isPlaying
-            ? "● RUNNING"
+            ? "RUNNING"
             : isPaused
-            ? "⏸ PAUSED"
+            ? "PAUSED"
             : currentStep >= totalSteps && totalSteps > 0
-            ? "● COMPLETED"
-            : "● READY"}
+            ? "COMPLETED"
+            : "READY"}
         </div>
       </div>
 
@@ -456,12 +456,12 @@ export default function GraphTraversalSim() {
             onClick={handlePlayToggle}
           >
             {isPlaying
-              ? "⏸ Pause"
+              ? "Pause"
               : currentStep >= totalSteps && totalSteps > 0
-              ? "↺ Replay"
+              ? "Replay"
               : isPaused
-              ? "▶ Resume"
-              : "▶ Start Traversal"}
+              ? "Resume"
+              : "Start Traversal"}
           </button>
           <button className="btn btn-secondary" onClick={handleReset}>
             Reset
@@ -518,7 +518,7 @@ export default function GraphTraversalSim() {
             disabled={isPlaying || currentStep <= 0}
             title="Step backward 1 step"
           >
-            ◀◀
+            -1 Step
           </button>
           <button
             className="btn btn-secondary"
@@ -526,7 +526,7 @@ export default function GraphTraversalSim() {
             disabled={isPlaying || currentStep >= totalSteps}
             title="Step forward 1 step"
           >
-            ▶▶
+            +1 Step
           </button>
         </div>
       </div>

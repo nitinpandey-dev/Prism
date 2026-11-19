@@ -71,7 +71,8 @@ export default function ProjectileMotionSim() {
 
     const animate = (now) => {
       if (!lastTimeRef.current) lastTimeRef.current = now;
-      const dt = ((now - lastTimeRef.current) / 1000) * playbackSpeed * 1.6;
+      const rawDt = ((now - lastTimeRef.current) / 1000) * playbackSpeed * 1.6;
+      const dt = Math.min(Math.max(rawDt, 0), 0.05);
       lastTimeRef.current = now;
 
       setSimTime((prev) => {
@@ -335,7 +336,7 @@ export default function ProjectileMotionSim() {
       ctx.fillStyle = "#1e3a5f";
       ctx.font = "bold 10px var(--font-mono)";
       ctx.textAlign = "right";
-      ctx.fillText(`⏸ PAUSED  t = ${currentT.toFixed(3)}s`, infoX - 8, infoY + 16);
+      ctx.fillText(`PAUSED  t = ${currentT.toFixed(3)}s`, infoX - 8, infoY + 16);
       ctx.font = "10px var(--font-mono)";
       ctx.fillStyle = "#475569";
       ctx.fillText(`x = ${currentX.toFixed(2)}m`, infoX - 8, infoY + 32);
@@ -357,7 +358,7 @@ export default function ProjectileMotionSim() {
           className="sim-main-canvas"
         />
         <div className="sim-canvas-overlay-badge">
-          {isPlaying ? "● RUNNING" : isPaused ? "⏸ PAUSED" : simTime >= totalFlightTime ? "● LANDED" : "● READY"}
+          {isPlaying ? "RUNNING" : isPaused ? "PAUSED" : simTime >= totalFlightTime ? "LANDED" : "READY"}
         </div>
       </div>
 
@@ -437,7 +438,7 @@ export default function ProjectileMotionSim() {
             className={`btn ${isPlaying ? "btn-secondary" : "btn-primary"}`}
             onClick={handlePlayToggle}
           >
-            {isPlaying ? "⏸ Pause" : simTime >= totalFlightTime ? "↺ Replay" : isPaused ? "▶ Resume" : "▶ Launch"}
+            {isPlaying ? "Pause" : simTime >= totalFlightTime ? "Replay" : isPaused ? "Resume" : "Launch"}
           </button>
           <button className="btn btn-secondary" onClick={handleReset}>
             Reset
@@ -494,7 +495,7 @@ export default function ProjectileMotionSim() {
             disabled={isPlaying || simTime <= 0}
             title="Step backward 0.05s"
           >
-            ◀◀
+            -0.05s
           </button>
           <button
             className="btn btn-secondary"
@@ -502,7 +503,7 @@ export default function ProjectileMotionSim() {
             disabled={isPlaying || simTime >= totalFlightTime}
             title="Step forward 0.05s"
           >
-            ▶▶
+            +0.05s
           </button>
         </div>
       </div>

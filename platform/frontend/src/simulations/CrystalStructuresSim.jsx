@@ -80,25 +80,44 @@ export default function CrystalStructuresSim() {
     return atoms;
   };
 
-  // Drag Interaction
-  const handleMouseDown = (e) => {
+  // Drag Interaction (with global window listeners to prevent mouse-stuck glitch)
+  const handlePointerDown = (clientX, clientY) => {
     setIsDragging(true);
     setAutoRotate(false);
-    setDragStart({ x: e.clientX, y: e.clientY });
+    setDragStart({ x: clientX, y: clientY });
   };
 
-  const handleMouseMove = (e) => {
+  useEffect(() => {
     if (!isDragging) return;
-    const dx = e.clientX - dragStart.x;
-    const dy = e.clientY - dragStart.y;
-    setRotationAngle((prev) => ({
-      x: prev.x + dy * 0.5,
-      y: prev.y + dx * 0.5,
-    }));
-    setDragStart({ x: e.clientX, y: e.clientY });
-  };
 
-  const handleMouseUp = () => setIsDragging(false);
+    const handlePointerMove = (e) => {
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const dx = clientX - dragStart.x;
+      const dy = clientY - dragStart.y;
+      setRotationAngle((prev) => ({
+        x: prev.x + dy * 0.5,
+        y: prev.y + dx * 0.5,
+      }));
+      setDragStart({ x: clientX, y: clientY });
+    };
+
+    const handlePointerUp = () => {
+      setIsDragging(false);
+    };
+
+    window.addEventListener("mousemove", handlePointerMove);
+    window.addEventListener("mouseup", handlePointerUp);
+    window.addEventListener("touchmove", handlePointerMove);
+    window.addEventListener("touchend", handlePointerUp);
+
+    return () => {
+      window.removeEventListener("mousemove", handlePointerMove);
+      window.removeEventListener("mouseup", handlePointerUp);
+      window.removeEventListener("touchmove", handlePointerMove);
+      window.removeEventListener("touchend", handlePointerUp);
+    };
+  }, [isDragging, dragStart]);
 
   // Auto-rotation loop
   useEffect(() => {
@@ -228,10 +247,13 @@ export default function CrystalStructuresSim() {
       {/* ── Main 3D Canvas Viewport ── */}
       <div
         className="sim-canvas-container"
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        style={{ cursor: isDragging ? "grabbing" : "grab" }}
+        onMouseDown={(e) => handlePointerDown(e.clientX, e.clientY)}
+        onTouchStart={(e) => {
+          if (e.touches.length === 1) {
+            handlePointerDown(e.touches[0].clientX, e.touches[0].clientY);
+          }
+        }}
+        style={{ cursor: isDragging ? "grabbing" : "grab", touchAction: "none" }}
       >
         <canvas
           ref={canvasRef}

@@ -5,7 +5,6 @@ import { useAdventureStore } from '../../stores/useAdventureStore';
 
 export default function AdventureCamera() {
   const { camera, gl } = useThree();
-  const skaterPosition = useAdventureStore((s) => s.skaterPosition);
 
   const orbitYaw = useRef(0);
   const orbitPitch = useRef(0.28);
@@ -72,6 +71,10 @@ export default function AdventureCamera() {
   }, [gl]);
 
   useFrame((_, delta) => {
+    const dt = Math.min(delta, 0.05);
+    // Read directly from store state to avoid triggering React re-renders at 60fps!
+    const skaterPosition = useAdventureStore.getState().skaterPosition;
+
     const targetX = skaterPosition[0];
     const targetY = skaterPosition[1] + 1.2;
     const targetZ = skaterPosition[2];
@@ -81,10 +84,10 @@ export default function AdventureCamera() {
     const camY = targetY + distance * Math.sin(orbitPitch.current);
     const camZ = targetZ - distance * Math.cos(orbitYaw.current) * Math.cos(orbitPitch.current);
 
-    // Smooth camera damping
-    camera.position.x = THREE.MathUtils.lerp(camera.position.x, camX, 8 * delta);
-    camera.position.y = THREE.MathUtils.lerp(camera.position.y, camY, 8 * delta);
-    camera.position.z = THREE.MathUtils.lerp(camera.position.z, camZ, 8 * delta);
+    // Smooth camera damping without jitter
+    camera.position.x = THREE.MathUtils.lerp(camera.position.x, camX, 8 * dt);
+    camera.position.y = THREE.MathUtils.lerp(camera.position.y, camY, 8 * dt);
+    camera.position.z = THREE.MathUtils.lerp(camera.position.z, camZ, 8 * dt);
 
     camera.lookAt(targetX, targetY, targetZ);
   });

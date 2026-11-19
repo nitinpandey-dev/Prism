@@ -61,9 +61,10 @@ export default function WaveSuperpositionSim() {
     }
     const tick = (now) => {
       if (!lastFrameRef.current) lastFrameRef.current = now;
-      const dt = (now - lastFrameRef.current) / 1000;
+      const rawDt = (now - lastFrameRef.current) / 1000;
+      const dt = Math.min(Math.max(rawDt, 0), 0.05);
       lastFrameRef.current = now;
-      setTimeOffset((prev) => prev + dt * 2);
+      setTimeOffset((prev) => (prev + dt * 2) % (Math.PI * 200));
       animRef.current = requestAnimationFrame(tick);
     };
     animRef.current = requestAnimationFrame(tick);
@@ -386,7 +387,7 @@ export default function WaveSuperpositionSim() {
         <div className="sim-btn-group">
           <button className={`btn ${animating ? "btn-secondary" : "btn-primary"}`}
             onClick={() => setAnimating(!animating)}>
-            {animating ? "⏸ Stop" : "▶ Animate"}
+            {animating ? "Pause" : "Animate"}
           </button>
           <button className="btn btn-secondary" onClick={handleReset}>
             Reset

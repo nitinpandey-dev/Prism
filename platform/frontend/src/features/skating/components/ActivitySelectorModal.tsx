@@ -1,6 +1,6 @@
 import { useGameStore } from '../../../stores/useGameStore';
 import { useSkatingStore } from '../stores/useSkatingStore';
-import { Compass, Flame, Sparkles, X, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { Compass, Flame, Sparkles, X, ChevronRight, CheckCircle2, Rocket, Footprints } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;
@@ -21,7 +21,7 @@ export default function ActivitySelectorModal({ isOpen, onClose }: Props) {
       title: 'The Last Signal',
       topic: 'Projectile Motion & 3D Kinematics',
       location: 'Kepler-186f Research Outpost Theta',
-      icon: '🚀',
+      icon: <Rocket size={24} color="#38bdf8" />,
       difficulty: 'Beginner → Intermediate',
       desc: 'Explore a futuristic alien outpost, calibrate a pneumatic mortar, and launch an emergency distress beacon across a 120-meter canyon.',
       tags: ['Kinematics', 'Trajectory', 'Ballistics', 'Energy'],
@@ -32,7 +32,7 @@ export default function ActivitySelectorModal({ isOpen, onClose }: Props) {
       title: 'Science Adventure — Skating World',
       topic: 'Explore. Play. Experiment. Discover.',
       location: 'Sunnyvale Outdoor Skate Park & Adventure Hub',
-      icon: '⛸️',
+      icon: <Footprints size={24} color="#f59e0b" />,
       difficulty: 'All Ages (10–15)',
       desc: 'Skate freely across concrete, ice, grass, and ramps with Alex! Experience grip, slipping, and stopping distance through interactive 3D missions.',
       tags: ['Friction & Grip', 'Stopping Distance', 'Slopes & Gravity', 'Surface Resistance'],

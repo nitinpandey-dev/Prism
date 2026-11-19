@@ -6,20 +6,19 @@ import { useMissionStore } from '../../stores/useMissionStore';
 
 export default function PlayerController() {
   const { camera } = useThree();
-  const {
-    player,
-    isConsoleOpen,
-    cameraView,
-    updatePlayerPosition,
-    setNearInteractable,
-    openConsole,
-  } = useGameStore();
+  const isConsoleOpen = useGameStore((s) => s.isConsoleOpen);
+  const cameraView = useGameStore((s) => s.cameraView);
+  const updatePlayerPosition = useGameStore((s) => s.updatePlayerPosition);
+  const setNearInteractable = useGameStore((s) => s.setNearInteractable);
 
   const completeObjective = useMissionStore((s) => s.completeObjective);
 
+  const initialPos = useRef(useGameStore.getState().player.position);
   const groupRef = useRef<THREE.Group>(null);
   const leftLegRef = useRef<THREE.Mesh>(null);
   const rightLegRef = useRef<THREE.Mesh>(null);
+  const wasNearRef = useRef(false);
+  const lastStoreSync = useRef(0);
 
   // Key state map
   const keys = useRef<{ [key: string]: boolean }>({});
@@ -67,6 +66,7 @@ export default function PlayerController() {
       return;
     }
 
+    const dt = Math.min(delta, 0.05);
     const moveSpeed = keys.current['ShiftLeft'] || keys.current['ShiftRight'] ? 8.5 : 5.0;
     const accel = 25.0;
 
@@ -98,12 +98,12 @@ export default function PlayerController() {
       velocity.current.x = THREE.MathUtils.lerp(
         velocity.current.x,
         inputDir.x * moveSpeed,
-        accel * delta
+        accel * dt
       );
       velocity.current.z = THREE.MathUtils.lerp(
         velocity.current.z,
         inputDir.z * moveSpeed,
-        accel * delta
+        accel * dt
       );
 
       // Rotate character to face movement direction smoothly (shortest angular distance)
@@ -111,17 +111,17 @@ export default function PlayerController() {
       let diff = targetAngle - currentRotation.current;
       while (diff < -Math.PI) diff += Math.PI * 2;
       while (diff > Math.PI) diff -= Math.PI * 2;
-      currentRotation.current += diff * Math.min(1, 14 * delta);
+      currentRotation.current += diff * Math.min(1, 14 * dt);
     } else {
       // Deceleration damping
-      velocity.current.x = THREE.MathUtils.lerp(velocity.current.x, 0, 15 * delta);
-      velocity.current.z = THREE.MathUtils.lerp(velocity.current.z, 0, 15 * delta);
+      velocity.current.x = THREE.MathUtils.lerp(velocity.current.x, 0, 15 * dt);
+      velocity.current.z = THREE.MathUtils.lerp(velocity.current.z, 0, 15 * dt);
     }
 
     // Update position
     const currentPos = groupRef.current.position;
-    const nextX = currentPos.x + velocity.current.x * delta;
-    const nextZ = currentPos.z + velocity.current.z * delta;
+    const nextX = currentPos.x + velocity.current.x * dt;
+    const nextZ = currentPos.z + velocity.current.z * dt;
 
     // Clamp inside Outpost boundary
     const clampedX = Math.max(-28, Math.min(28, nextX));
@@ -145,29 +145,37 @@ export default function PlayerController() {
       }
     }
 
-    // Sync to global store
-    updatePlayerPosition([clampedX, 0.9, clampedZ], currentRotation.current, isMoving);
+    // Throttled sync to global store (~20Hz) to prevent micro-stutter
+    const now = state.clock.elapsedTime;
+    if (now - lastStoreSync.current >= 0.05) {
+      lastStoreSync.current = now;
+      updatePlayerPosition([clampedX, 0.9, clampedZ], currentRotation.current, isMoving);
+    }
 
     // Proximity detection for Launcher Console at [0, 0.8, 8.2]
     const distToConsole = Math.sqrt(
       Math.pow(clampedX - 0, 2) + Math.pow(clampedZ - 8.2, 2)
     );
 
-    if (distToConsole < 3.2) {
-      setNearInteractable({
-        id: 'launcher_console',
-        name: 'Pneumatic Launcher Terminal',
-        prompt: 'Press [E] to Calibrate & Launch',
-        position: [0, 0.8, 8.2],
-        interactionDistance: 3.2,
-      });
-    } else {
-      setNearInteractable(null);
+    const isNear = distToConsole < 3.2;
+    if (isNear !== wasNearRef.current) {
+      wasNearRef.current = isNear;
+      if (isNear) {
+        setNearInteractable({
+          id: 'launcher_console',
+          name: 'Pneumatic Launcher Terminal',
+          prompt: 'Press [E] to Calibrate & Launch',
+          position: [0, 0.8, 8.2],
+          interactionDistance: 3.2,
+        });
+      } else {
+        setNearInteractable(null);
+      }
     }
   });
 
   return (
-    <group ref={groupRef} position={[player.position[0], player.position[1], player.position[2]]}>
+    <group ref={groupRef} position={[initialPos.current[0], initialPos.current[1], initialPos.current[2]]}>
       {/* ── SCI-FI ASTRONAUT AVATAR ── */}
       {/* Torso & Suit */}
       <mesh position={[0, 0.9, 0]} castShadow>

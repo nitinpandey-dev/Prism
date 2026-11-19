@@ -95,8 +95,8 @@ export default function TopNavigation() {
             }}
             title="Click to Switch Physics Story Activities"
           >
-            <span>{activeActivity === 'skating' ? '⛸️ Science Adventure' : '🚀 PHY-001 (The Last Signal)'}</span>
-            <span style={{ color: '#38bdf8', fontSize: '0.65rem' }}>▼ Change</span>
+            <span>{activeActivity === 'skating' ? 'Science Adventure' : 'PHY-001: The Last Signal'}</span>
+            <span style={{ color: '#38bdf8', fontSize: '0.65rem' }}>Change</span>
           </button>
         </div>
       </div>
