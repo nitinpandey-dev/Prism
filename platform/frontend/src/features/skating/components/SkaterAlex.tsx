@@ -6,18 +6,10 @@ import { useGameStore } from '../../../stores/useGameStore';
 
 export default function SkaterAlex() {
   const { camera } = useThree();
-  const {
-    experimentState,
-    skaterPosition,
-    skaterRotation,
-    skaterAnimState,
-    tickExperiment,
-    updateSkaterFreeRoam,
-    startExperiment,
-  } = useSkatingStore();
-
+  const experimentState = useSkatingStore((s) => s.experimentState);
   const isConsoleOpen = useGameStore((s) => s.isConsoleOpen);
 
+  const initialPos = useRef(useSkatingStore.getState().skaterPosition);
   const groupRef = useRef<THREE.Group>(null);
   const leftLegRef = useRef<THREE.Group>(null);
   const rightLegRef = useRef<THREE.Group>(null);
@@ -63,14 +55,19 @@ export default function SkaterAlex() {
   }, []);
 
   const velocity = useRef(new THREE.Vector3());
-  const currentRotation = useRef(skaterRotation);
+  const currentRotation = useRef(useSkatingStore.getState().skaterRotation);
+  const lastSyncTime = useRef(0);
 
   useFrame((state, delta) => {
+    const dt = Math.min(delta, 0.05);
     const t = state.clock.elapsedTime;
+    const storeState = useSkatingStore.getState();
+    const skaterPosition = storeState.skaterPosition;
+    const skaterRotation = storeState.skaterRotation;
 
     // ── 1. EXPERIMENT DRIVEN MOVEMENT ──
     if (experimentState === 'approaching' || experimentState === 'braking') {
-      tickExperiment(delta);
+      storeState.tickExperiment(dt);
 
       if (groupRef.current) {
         groupRef.current.position.set(skaterPosition[0], skaterPosition[1] + 0.85, skaterPosition[2]);
@@ -106,22 +103,22 @@ export default function SkaterAlex() {
 
         if (isMoving) {
           inputDir.normalize();
-          velocity.current.x = THREE.MathUtils.lerp(velocity.current.x, inputDir.x * moveSpeed, accel * delta);
-          velocity.current.z = THREE.MathUtils.lerp(velocity.current.z, inputDir.z * moveSpeed, accel * delta);
+          velocity.current.x = THREE.MathUtils.lerp(velocity.current.x, inputDir.x * moveSpeed, accel * dt);
+          velocity.current.z = THREE.MathUtils.lerp(velocity.current.z, inputDir.z * moveSpeed, accel * dt);
 
           const targetAngle = Math.atan2(inputDir.x, inputDir.z);
           let diff = targetAngle - currentRotation.current;
           while (diff < -Math.PI) diff += Math.PI * 2;
           while (diff > Math.PI) diff -= Math.PI * 2;
-          currentRotation.current += diff * Math.min(1, 12 * delta);
+          currentRotation.current += diff * Math.min(1, 12 * dt);
         } else {
-          velocity.current.x = THREE.MathUtils.lerp(velocity.current.x, 0, 12 * delta);
-          velocity.current.z = THREE.MathUtils.lerp(velocity.current.z, 0, 12 * delta);
+          velocity.current.x = THREE.MathUtils.lerp(velocity.current.x, 0, 12 * dt);
+          velocity.current.z = THREE.MathUtils.lerp(velocity.current.z, 0, 12 * dt);
         }
 
         const currentPos = groupRef.current.position;
-        const nextX = Math.max(-14, Math.min(14, currentPos.x + velocity.current.x * delta));
-        const nextZ = Math.max(-35, Math.min(42, currentPos.z + velocity.current.z * delta));
+        const nextX = Math.max(-14, Math.min(14, currentPos.x + velocity.current.x * dt));
+        const nextZ = Math.max(-35, Math.min(42, currentPos.z + velocity.current.z * dt));
 
         currentPos.x = nextX;
         currentPos.z = nextZ;
@@ -129,8 +126,12 @@ export default function SkaterAlex() {
 
         groupRef.current.rotation.y = currentRotation.current;
 
-        const currentAnim = isBraking ? 'braking' : isMoving ? (isSprinting ? 'sprinting' : 'skating') : 'idle';
-        updateSkaterFreeRoam([nextX, 0, nextZ], currentRotation.current, currentAnim);
+        // Throttled sync to store (~20Hz)
+        if (t - lastSyncTime.current > 0.05) {
+          lastSyncTime.current = t;
+          const currentAnim = isBraking ? 'braking' : isMoving ? (isSprinting ? 'sprinting' : 'skating') : 'idle';
+          storeState.updateSkaterFreeRoam([nextX, 0, nextZ], currentRotation.current, currentAnim);
+        }
       }
     }
 
@@ -213,7 +214,7 @@ export default function SkaterAlex() {
   });
 
   return (
-    <group ref={groupRef} position={[skaterPosition[0], 0.85, skaterPosition[2]]}>
+    <group ref={groupRef} position={[initialPos.current[0], 0.85, initialPos.current[2]]}>
       {/* ── SKATER ALEX: 3D CHARACTER MODEL ── */}
       <group ref={torsoRef}>
         {/* Torso & Athletic Sports Jacket */}

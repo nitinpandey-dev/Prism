@@ -73,7 +73,18 @@ export default function AdventureCamera() {
   useFrame((_, delta) => {
     const dt = Math.min(delta, 0.05);
     // Read directly from store state to avoid triggering React re-renders at 60fps!
-    const skaterPosition = useAdventureStore.getState().skaterPosition;
+    const state = useAdventureStore.getState();
+    const skaterPosition = state.skaterPosition;
+    const skaterSpeed = state.skaterSpeed;
+    const skaterRotation = state.skaterRotation;
+
+    // Soft yaw auto-alignment: when moving forward at speed and not dragging, gently align camera behind skater
+    if (!isDragging.current && skaterSpeed > 1.2) {
+      let diff = -skaterRotation - orbitYaw.current;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+      while (diff > Math.PI) diff -= Math.PI * 2;
+      orbitYaw.current += diff * Math.min(1, 1.8 * dt);
+    }
 
     const targetX = skaterPosition[0];
     const targetY = skaterPosition[1] + 1.2;

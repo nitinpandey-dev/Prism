@@ -5,7 +5,6 @@ import { useGameStore } from '../../stores/useGameStore';
 import { useAriaStore } from '../../stores/useAriaStore';
 
 export default function AriaCompanion() {
-  const player = useGameStore((s) => s.player);
   const mood = useAriaStore((s) => s.currentMood);
 
   const droneGroupRef = useRef<THREE.Group>(null);
@@ -29,16 +28,18 @@ export default function AriaCompanion() {
   useFrame((state, delta) => {
     if (!droneGroupRef.current) return;
 
+    const dt = Math.min(delta, 0.05);
     const t = state.clock.elapsedTime;
+    const playerPos = useGameStore.getState().player.position;
 
     // Hover floating position slightly above and to the right of the player
-    const targetX = player.position[0] + 1.2;
-    const targetY = player.position[1] + 1.8 + Math.sin(t * 2.5) * 0.15;
-    const targetZ = player.position[2] - 0.4;
+    const targetX = playerPos[0] + 1.2;
+    const targetY = playerPos[1] + 1.8 + Math.sin(t * 2.5) * 0.15;
+    const targetZ = playerPos[2] - 0.4;
 
-    currentPos.current.x = THREE.MathUtils.lerp(currentPos.current.x, targetX, 5 * delta);
-    currentPos.current.y = THREE.MathUtils.lerp(currentPos.current.y, targetY, 5 * delta);
-    currentPos.current.z = THREE.MathUtils.lerp(currentPos.current.z, targetZ, 5 * delta);
+    currentPos.current.x = THREE.MathUtils.lerp(currentPos.current.x, targetX, 5 * dt);
+    currentPos.current.y = THREE.MathUtils.lerp(currentPos.current.y, targetY, 5 * dt);
+    currentPos.current.z = THREE.MathUtils.lerp(currentPos.current.z, targetZ, 5 * dt);
 
     droneGroupRef.current.position.copy(currentPos.current);
 

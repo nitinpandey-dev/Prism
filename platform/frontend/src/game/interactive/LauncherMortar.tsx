@@ -6,24 +6,23 @@ import { useMissionStore } from '../../stores/useMissionStore';
 import { useAriaStore } from '../../stores/useAriaStore';
 
 export default function LauncherMortar() {
-  const {
-    params,
-    isFiring,
-    currentProjectilePos,
-    updateFlightTick,
-  } = usePhysicsStore();
+  const params = usePhysicsStore((s) => s.params);
+  const isFiring = usePhysicsStore((s) => s.isFiring);
   const recordLaunchAttempt = useMissionStore((s) => s.recordLaunchAttempt);
   const addAriaMessage = useAriaStore((s) => s.addMessage);
 
   const barrelRef = useRef<THREE.Group>(null);
   const baseRef = useRef<THREE.Group>(null);
   const flashRef = useRef<THREE.PointLight>(null);
+  const projectileRef = useRef<THREE.Group>(null);
 
   // Convert degrees to radians
   const pitchRad = (params.launchAngle * Math.PI) / 180;
   const yawRad = (params.launchAzimuth * Math.PI) / 180;
 
   useFrame((state, delta) => {
+    const dt = Math.min(delta, 0.05);
+
     // Smoothly orient barrel pitch and base yaw (negative yaw rotates right)
     if (baseRef.current) {
       baseRef.current.rotation.y = THREE.MathUtils.lerp(
@@ -43,7 +42,20 @@ export default function LauncherMortar() {
 
     // Step the projectile flight physics if actively firing
     if (isFiring) {
-      const result = updateFlightTick(delta * 1.0);
+      const result = usePhysicsStore.getState().updateFlightTick(dt);
+
+      // Direct ref update without React re-render
+      if (projectileRef.current) {
+        const curPos = usePhysicsStore.getState().currentProjectilePos;
+        if (curPos) {
+          projectileRef.current.position.set(
+            curPos.x - params.initialPosition.x,
+            curPos.y - 0.8,
+            curPos.z - params.initialPosition.z
+          );
+        }
+      }
+
       if (result.finished) {
         // Projectile hit ground or target!
         const lastResult = usePhysicsStore.getState().lastResult;
@@ -126,32 +138,24 @@ export default function LauncherMortar() {
       </group>
 
       {/* ── 4. Projectile In Flight ── */}
-      {isFiring && currentProjectilePos && (
-        <group
-          position={[
-            currentProjectilePos.x - params.initialPosition.x,
-            currentProjectilePos.y - 0.8,
-            currentProjectilePos.z - params.initialPosition.z,
-          ]}
-        >
-          {/* Beacon Canister Capsule */}
-          <mesh castShadow>
-            <cylinderGeometry args={[0.3, 0.3, 1.0, 16]} />
-            <meshStandardMaterial
-              color="#38bdf8"
-              emissive="#0284c7"
-              emissiveIntensity={0.8}
-              metalness={0.9}
-            />
-          </mesh>
-          {/* Ion Glow Trail */}
-          <pointLight color="#38bdf8" intensity={2.5} distance={8} />
-          <mesh scale={[1.4, 1.4, 1.4]}>
-            <sphereGeometry args={[0.4, 12, 12]} />
-            <meshBasicMaterial color="#7dd3fc" transparent opacity={0.6} />
-          </mesh>
-        </group>
-      )}
+      <group ref={projectileRef} visible={isFiring}>
+        {/* Beacon Canister Capsule */}
+        <mesh castShadow>
+          <cylinderGeometry args={[0.3, 0.3, 1.0, 16]} />
+          <meshStandardMaterial
+            color="#38bdf8"
+            emissive="#0284c7"
+            emissiveIntensity={0.8}
+            metalness={0.9}
+          />
+        </mesh>
+        {/* Ion Glow Trail */}
+        <pointLight color="#38bdf8" intensity={2.5} distance={8} />
+        <mesh scale={[1.4, 1.4, 1.4]}>
+          <sphereGeometry args={[0.4, 12, 12]} />
+          <meshBasicMaterial color="#7dd3fc" transparent opacity={0.6} />
+        </mesh>
+      </group>
     </group>
   );
 }

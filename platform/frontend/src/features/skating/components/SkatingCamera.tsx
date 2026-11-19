@@ -5,7 +5,7 @@ import { useSkatingStore } from '../stores/useSkatingStore';
 
 export default function SkatingCamera() {
   const { camera } = useThree();
-  const { skaterPosition, experimentState } = useSkatingStore();
+  const experimentState = useSkatingStore((s) => s.experimentState);
 
   const orbitYaw = useRef(0);
   const orbitPitch = useRef(0.28);
@@ -48,6 +48,8 @@ export default function SkatingCamera() {
   const currentLookAt = useRef(new THREE.Vector3(0, 1.2, -25));
 
   useFrame((_, delta) => {
+    const dt = Math.min(delta, 0.05);
+    const skaterPosition = useSkatingStore.getState().skaterPosition;
     const [sx, sy, sz] = skaterPosition;
 
     const targetCamPos = new THREE.Vector3();
@@ -71,8 +73,8 @@ export default function SkatingCamera() {
     }
 
     const lerpSpeed = 7.0;
-    currentCamPos.current.lerp(targetCamPos, lerpSpeed * delta);
-    currentLookAt.current.lerp(targetLookAt, lerpSpeed * delta);
+    currentCamPos.current.lerp(targetCamPos, lerpSpeed * dt);
+    currentLookAt.current.lerp(targetLookAt, lerpSpeed * dt);
 
     camera.position.copy(currentCamPos.current);
     camera.lookAt(currentLookAt.current);

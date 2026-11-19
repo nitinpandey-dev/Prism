@@ -36,15 +36,14 @@ export default function TrajectoryVisualizer() {
     <group>
       {/* ── 1. The Trajectory Curve ── */}
       {lineGeometry && (
-        <primitive object={new THREE.Line(
-          lineGeometry,
-          new THREE.LineBasicMaterial({
-            color: lineColor,
-            linewidth: 2,
-            transparent: true,
-            opacity: isFiring ? 0.4 : 0.85,
-          })
-        )} />
+        <line geometry={lineGeometry}>
+          <lineBasicMaterial
+            color={lineColor}
+            linewidth={2}
+            transparent
+            opacity={isFiring ? 0.4 : 0.85}
+          />
+        </line>
       )}
 
       {/* ── 2. Apex Marker (H_max) ── */}

@@ -6,19 +6,16 @@ import { SurfaceId } from '../../types/adventure';
 
 export default function SkaterAlex() {
   const { camera } = useThree();
-  const {
-    activeMissionId,
-    missionState,
-    skaterPosition,
-    skaterRotation,
-    updateSkaterTransform,
-    completeMissionSuccess,
-    failMission,
-    virtualJoystick,
-    isBraking: mobileBraking,
-    isSprinting: mobileSprinting,
-  } = useAdventureStore();
+  const activeMissionId = useAdventureStore((s) => s.activeMissionId);
+  const missionState = useAdventureStore((s) => s.missionState);
+  const updateSkaterTransform = useAdventureStore((s) => s.updateSkaterTransform);
+  const completeMissionSuccess = useAdventureStore((s) => s.completeMissionSuccess);
+  const failMission = useAdventureStore((s) => s.failMission);
+  const virtualJoystick = useAdventureStore((s) => s.virtualJoystick);
+  const mobileBraking = useAdventureStore((s) => s.isBraking);
+  const mobileSprinting = useAdventureStore((s) => s.isSprinting);
 
+  const initialPos = useRef(useAdventureStore.getState().skaterPosition);
   const groupRef = useRef<THREE.Group>(null);
   const bodyRef = useRef<THREE.Group>(null);
   const leftLegRef = useRef<THREE.Group>(null);
@@ -33,7 +30,7 @@ export default function SkaterAlex() {
 
   // Physics velocity and rotational state
   const velocity = useRef(new THREE.Vector3());
-  const currentRotY = useRef(skaterRotation);
+  const currentRotY = useRef(useAdventureStore.getState().skaterRotation);
   const bankRoll = useRef(0);
   const wheelSpin = useRef(0);
   const stumbleTimer = useRef(0);
@@ -41,6 +38,24 @@ export default function SkaterAlex() {
 
   // Keyboard keys
   const keys = useRef<{ [key: string]: boolean }>({});
+
+  // Reset position & rotation when a mission begins or is retried
+  useEffect(() => {
+    if (missionState === 'briefing' || missionState === 'playing') {
+      const state = useAdventureStore.getState();
+      if (groupRef.current) {
+        groupRef.current.position.set(
+          state.skaterPosition[0],
+          state.skaterPosition[1],
+          state.skaterPosition[2]
+        );
+        currentRotY.current = state.skaterRotation;
+        groupRef.current.rotation.y = state.skaterRotation;
+        velocity.current.set(0, 0, 0);
+        bankRoll.current = 0;
+      }
+    }
+  }, [activeMissionId, missionState]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -189,7 +204,7 @@ export default function SkaterAlex() {
     // Enforce park boundaries (stops before clipping through finish barrier at Z = 28)
     pos.x = Math.max(-16.5, Math.min(16.5, pos.x + velocity.current.x * dt));
     pos.z = Math.max(-28, Math.min(27.8, pos.z + velocity.current.z * dt));
-    pos.y = targetY;
+    pos.y = THREE.MathUtils.lerp(pos.y, targetY, 15 * dt);
 
     groupRef.current.rotation.y = currentRotY.current;
     if (bodyRef.current) {
@@ -293,7 +308,7 @@ export default function SkaterAlex() {
   });
 
   return (
-    <group ref={groupRef} position={[skaterPosition[0], 0.85, skaterPosition[2]]}>
+    <group ref={groupRef} position={[initialPos.current[0], 0.85, initialPos.current[2]]}>
       <group ref={bodyRef}>
         {/* ── 1. TORSO & SKATE HOODIE ── */}
         <group ref={torsoRef} position={[0, 0.44, 0]}>
