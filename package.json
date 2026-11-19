@@ -4,7 +4,7 @@
   "private": true,
   "description": "PRISM - Interactive STEM Simulation Platform",
   "scripts": {
-    "build": "cd platform/frontend && npm install && npm run build",
+    "build": "npm --prefix platform/frontend install && npm --prefix platform/frontend run build",
     "dev": "npm run dev --prefix platform/frontend",
     "dev:frontend": "npm run dev --prefix platform/frontend",
     "dev:backend": "python platform/backend/main.py"
