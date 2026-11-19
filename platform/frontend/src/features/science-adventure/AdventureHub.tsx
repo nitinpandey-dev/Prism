@@ -354,19 +354,6 @@ export default function AdventureHub() {
             >
               Science Adventure
             </span>
-            <span
-              style={{
-                fontSize: '11px',
-                fontWeight: 600,
-                color: '#0071e3',
-                background: 'rgba(0, 113, 227, 0.08)',
-                padding: '2px 8px',
-                borderRadius: '980px',
-                letterSpacing: '0.04em',
-              }}
-            >
-              AGE 10–15
-            </span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
@@ -1321,9 +1308,9 @@ export default function AdventureHub() {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', padding: '28px 0', borderBottom: '1px solid #d2d2d7' }}>
-              <span style={{ fontSize: '16px', fontWeight: 600, color: '#1d1d1f' }}>Target Learners</span>
+              <span style={{ fontSize: '16px', fontWeight: 600, color: '#1d1d1f' }}>Learners & Accessibility</span>
               <div style={{ fontSize: '15px', color: '#6e6e73', lineHeight: 1.6 }}>
-                Children aged 10–15 years • Multi-tiered reading levels • Zero prerequisite scientific terminology required.
+                Intuitive for all learners • Multi-tiered reading levels • Zero prerequisite scientific terminology required.
               </div>
             </div>
 
