@@ -4,6 +4,60 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { useGameStore } from '../../stores/useGameStore';
 import { useMissionStore } from '../../stores/useMissionStore';
 
+// Resolve circle against an AABB box obstacle (smooth sliding collision)
+function resolveCircleAABB(
+  px: number,
+  pz: number,
+  r: number,
+  minX: number,
+  maxX: number,
+  minZ: number,
+  maxZ: number
+): [number, number] {
+  const closestX = Math.max(minX, Math.min(maxX, px));
+  const closestZ = Math.max(minZ, Math.min(maxZ, pz));
+  const dx = px - closestX;
+  const dz = pz - closestZ;
+  const distSq = dx * dx + dz * dz;
+
+  if (distSq < r * r && distSq > 0.000001) {
+    const dist = Math.sqrt(distSq);
+    const overlap = r - dist;
+    return [px + (dx / dist) * overlap, pz + (dz / dist) * overlap];
+  } else if (distSq <= 0.000001) {
+    const dLeft = px - minX;
+    const dRight = maxX - px;
+    const dBack = pz - minZ;
+    const dFront = maxZ - pz;
+    const minD = Math.min(dLeft, dRight, dBack, dFront);
+    if (minD === dLeft) return [minX - r, pz];
+    if (minD === dRight) return [maxX + r, pz];
+    if (minD === dBack) return [px, minZ - r];
+    return [px, maxZ + r];
+  }
+  return [px, pz];
+}
+
+// Resolve circle against a cylindrical obstacle
+function resolveCircleCylinder(
+  px: number,
+  pz: number,
+  r: number,
+  cx: number,
+  cz: number,
+  cylinderRadius: number
+): [number, number] {
+  const dx = px - cx;
+  const dz = pz - cz;
+  const dist = Math.sqrt(dx * dx + dz * dz);
+  const minDist = r + cylinderRadius;
+  if (dist < minDist && dist > 0.0001) {
+    const push = (minDist - dist) / dist;
+    return [px + dx * push, pz + dz * push];
+  }
+  return [px, pz];
+}
+
 export default function PlayerController() {
   const { camera } = useThree();
   const isConsoleOpen = useGameStore((s) => s.isConsoleOpen);
@@ -118,17 +172,40 @@ export default function PlayerController() {
       velocity.current.z = THREE.MathUtils.lerp(velocity.current.z, 0, 15 * dt);
     }
 
-    // Update position
+    // Update position with continuous obstacle collisions
     const currentPos = groupRef.current.position;
-    const nextX = currentPos.x + velocity.current.x * dt;
-    const nextZ = currentPos.z + velocity.current.z * dt;
+    let nextX = currentPos.x + velocity.current.x * dt;
+    let nextZ = currentPos.z + velocity.current.z * dt;
+    const playerRadius = 0.55;
 
-    // Clamp inside Outpost boundary
-    const clampedX = Math.max(-28, Math.min(28, nextX));
-    const clampedZ = Math.max(-24, Math.min(20, nextZ));
+    // 1. Boundary clamp (outer deck perimeter)
+    nextX = Math.max(-27.5, Math.min(27.5, nextX));
+    nextZ = Math.max(-23.5, Math.min(19.2, nextZ));
 
-    currentPos.x = clampedX;
-    currentPos.z = clampedZ;
+    // 2. Obstacle Collisions:
+    // A. Launcher Console Deck: at [0, 0.8, 8.2], box ~1.8m x 0.8m
+    [nextX, nextZ] = resolveCircleAABB(nextX, nextZ, playerRadius, -1.05, 1.05, 7.65, 8.75);
+
+    // B. Launcher Mortar Turret & Pedestal: at [0, 0.8, 12.0], cylinder radius 2.5m
+    [nextX, nextZ] = resolveCircleCylinder(nextX, nextZ, playerRadius, 0, 12.0, 2.5);
+
+    // C. Damaged Comms Tower: at [-20, 0, 2.0], cylinder radius 2.2m
+    [nextX, nextZ] = resolveCircleCylinder(nextX, nextZ, playerRadius, -20.0, 2.0, 2.2);
+
+    // D. Solar Array Panels: at [22, 0, -8], AABB covering the 3 panels
+    [nextX, nextZ] = resolveCircleAABB(nextX, nextZ, playerRadius, 19.5, 24.5, -16.5, 0.5);
+
+    // E. Habitation Dome: at [0, 0, -26], radius 10m with airlock corridor [-2.2, 2.2]
+    if (nextZ < -16.5) {
+      if (Math.abs(nextX) > 2.2) {
+        nextZ = -16.5; // Blocked by dome front walls
+      } else if (nextZ < -23.0) {
+        nextZ = -23.0; // Blocked by airlock back door
+      }
+    }
+
+    currentPos.x = nextX;
+    currentPos.z = nextZ;
     currentPos.y = 0.9; // Deck height
 
     groupRef.current.rotation.y = currentRotation.current;
@@ -149,12 +226,12 @@ export default function PlayerController() {
     const now = state.clock.elapsedTime;
     if (now - lastStoreSync.current >= 0.05) {
       lastStoreSync.current = now;
-      updatePlayerPosition([clampedX, 0.9, clampedZ], currentRotation.current, isMoving);
+      updatePlayerPosition([nextX, 0.9, nextZ], currentRotation.current, isMoving);
     }
 
     // Proximity detection for Launcher Console at [0, 0.8, 8.2]
     const distToConsole = Math.sqrt(
-      Math.pow(clampedX - 0, 2) + Math.pow(clampedZ - 8.2, 2)
+      Math.pow(nextX - 0, 2) + Math.pow(nextZ - 8.2, 2)
     );
 
     const isNear = distToConsole < 3.2;

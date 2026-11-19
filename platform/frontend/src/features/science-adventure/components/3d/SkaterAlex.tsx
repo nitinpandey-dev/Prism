@@ -36,6 +36,12 @@ export default function SkaterAlex() {
   const stumbleTimer = useRef(0);
   const lastSyncTime = useRef(0);
 
+  // Initialize whether skater starts on the elevated boardwalk ramp
+  const initPos = useAdventureStore.getState().skaterPosition;
+  const isOnRamp = useRef(
+    initPos[0] >= 4.3 && initPos[0] <= 8.7 && initPos[2] <= -5.0 && initPos[2] >= -22.5
+  );
+
   // Keyboard keys
   const keys = useRef<{ [key: string]: boolean }>({});
 
@@ -43,10 +49,22 @@ export default function SkaterAlex() {
   useEffect(() => {
     if (missionState === 'briefing' || missionState === 'playing') {
       const state = useAdventureStore.getState();
+      const onRamp = (
+        state.skaterPosition[0] >= 4.3 &&
+        state.skaterPosition[0] <= 8.7 &&
+        state.skaterPosition[2] <= -5.0 &&
+        state.skaterPosition[2] >= -22.5
+      );
+      isOnRamp.current = onRamp;
+
+      const initY = onRamp
+        ? 0.85 + THREE.MathUtils.clamp((-5.0 - state.skaterPosition[2]) / 15.0, 0, 1) * 1.40
+        : 0.85;
+
       if (groupRef.current) {
         groupRef.current.position.set(
           state.skaterPosition[0],
-          state.skaterPosition[1],
+          initY,
           state.skaterPosition[2]
         );
         currentRotY.current = state.skaterRotation;
@@ -110,23 +128,82 @@ export default function SkaterAlex() {
     const hasInput = inputDir.lengthSq() > 0.01;
     const pos = groupRef.current.position;
 
-    // ── 1. DYNAMIC SURFACE DETECTION ──
+    // ── 1. PARK BOUNDARIES & OBSTACLE COLLISION ──
+    let nextX = pos.x + velocity.current.x * dt;
+    let nextZ = pos.z + velocity.current.z * dt;
+
+    // Outer Park Perimeter
+    nextX = Math.max(-16.0, Math.min(16.0, nextX));
+    nextZ = Math.max(-27.5, Math.min(27.6, nextZ));
+
+    // Wooden Boardwalk Ramp Geometry: X in [4.3, 8.7], Z in [-22.5, -5.0]
+    const rampMinX = 4.3;
+    const rampMaxX = 8.7;
+    const rampMinZ = -22.5;
+    const rampEntranceZ = -5.0;
+
     let detectedSurface: SurfaceId = 'concrete';
     let targetY = 0.85;
 
-    // Frosted Ice Pond: X in [-8.6, -3.4], Z in [-10, 6]
-    if (pos.x >= -8.6 && pos.x <= -3.4 && pos.z >= -10 && pos.z <= 6) {
-      detectedSurface = 'ice';
-    }
-    // Wooden Boardwalk Ramp: X in [4.4, 8.6], Z in [-19.5, -5.5]
-    else if (pos.x >= 4.4 && pos.x <= 8.6 && pos.z >= -19.5 && pos.z <= -5.5) {
+    if (isOnRamp.current) {
+      // Skater is safely riding ON TOP of the boardwalk ramp
+      // 1. Side safety curbs (cannot fall off or clip through the sides)
+      nextX = Math.max(rampMinX + 0.25, Math.min(rampMaxX - 0.25, nextX));
+      // 2. Top resting deck back safety fence
+      nextZ = Math.max(rampMinZ + 0.35, nextZ);
+
+      // Height calculation on ramp:
+      const rampProgress = THREE.MathUtils.clamp((-5.0 - nextZ) / 15.0, 0, 1);
+      targetY = 0.85 + rampProgress * 1.40;
       detectedSurface = 'wood';
-      const rampProgress = (-5.5 - pos.z) / 14.0;
-      targetY = 0.85 + Math.max(0, Math.min(1.5, rampProgress * 1.5));
+
+      // Gravity acceleration downhill (+Z)
+      if (nextZ > -20.0 && nextZ < -5.0) {
+        velocity.current.z += 6.5 * dt;
+      }
+
+      // Exit ramp back to concrete ground when rolling forward past the mouth
+      if (nextZ > rampEntranceZ + 0.2) {
+        isOnRamp.current = false;
+      }
+    } else {
+      // Skater is down on the concrete / ground
+      // Solid Side-Wall Obstacle: If skater tries to walk into the elevated sides of the ramp from the ground, block them!
+      if (nextZ <= -5.8 && nextZ >= rampMinZ - 0.2) {
+        if (nextX >= rampMinX - 0.45 && nextX <= rampMaxX + 0.45) {
+          if (pos.x < 6.5) {
+            nextX = rampMinX - 0.5; // pushed out to the left
+          } else {
+            nextX = rampMaxX + 0.5; // pushed out to the right
+          }
+        }
+      } else if (nextZ < rampMinZ && nextZ >= rampMinZ - 0.8) {
+        // Back of ramp wall
+        if (nextX >= rampMinX - 0.45 && nextX <= rampMaxX + 0.45) {
+          nextZ = rampMinZ - 0.85;
+        }
+      } else if (nextZ <= -5.0 && nextZ >= -5.8 && nextX >= rampMinX + 0.15 && nextX <= rampMaxX - 0.15) {
+        // Skater entered through the designated ground-level entrance mouth!
+        isOnRamp.current = true;
+        detectedSurface = 'wood';
+      }
+
+      // Frosted Ice Pond: X in [-8.6, -3.4], Z in [-10, 6]
+      if (nextX >= -8.6 && nextX <= -3.4 && nextZ >= -10 && nextZ <= 6) {
+        detectedSurface = 'ice';
+      }
+      // Park Grass Meadow
+      else if (Math.abs(nextX) > 8.5 || Math.abs(nextZ) > 37) {
+        detectedSurface = 'grass';
+      }
     }
-    // Park Grass Meadow
-    else if ((Math.abs(pos.x) > 8.4 && !(pos.x >= 4.4 && pos.x <= 8.6 && pos.z >= -19.5 && pos.z <= -5.5)) || Math.abs(pos.z) > 37) {
-      detectedSurface = 'grass';
+
+    // Stainless Steel Grind Rail Collider: at X = -2.5, Z in [-11.0, 1.0]
+    if (nextZ >= -11.2 && nextZ <= 1.2) {
+      if (nextX >= -2.85 && nextX <= -2.15) {
+        if (pos.x < -2.5) nextX = -2.9;
+        else nextX = -2.1;
+      }
     }
 
     // ── 2. SURFACE PHYSICAL DYNAMICS ──
@@ -145,10 +222,6 @@ export default function SkaterAlex() {
       accelerationRate = 12.0;
       dragRate = 14.0;
       brakePower = 22.0;
-    } else if (detectedSurface === 'wood') {
-      if (pos.z > -19.5 && pos.z < -5.5) {
-        velocity.current.z += 5.5 * dt;
-      }
     }
 
     // ── 3. VELOCITY & BANKING CALCULATION ──
@@ -201,10 +274,14 @@ export default function SkaterAlex() {
       if (w) w.rotation.x = wheelSpin.current;
     });
 
-    // Enforce park boundaries (stops before clipping through finish barrier at Z = 28)
-    pos.x = Math.max(-16.5, Math.min(16.5, pos.x + velocity.current.x * dt));
-    pos.z = Math.max(-28, Math.min(27.8, pos.z + velocity.current.z * dt));
-    pos.y = THREE.MathUtils.lerp(pos.y, targetY, 15 * dt);
+    // Apply collision-resolved position
+    pos.x = nextX;
+    pos.z = nextZ;
+    if (isOnRamp.current) {
+      pos.y = targetY; // Firmly lock to wooden ramp surface so wheels never sink through
+    } else {
+      pos.y = THREE.MathUtils.lerp(pos.y, targetY, 15 * dt);
+    }
 
     groupRef.current.rotation.y = currentRotY.current;
     if (bodyRef.current) {

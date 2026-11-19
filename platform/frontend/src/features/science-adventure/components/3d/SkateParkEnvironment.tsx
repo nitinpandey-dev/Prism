@@ -154,10 +154,41 @@ export default function SkateParkEnvironment() {
 
       {/* ── 5. QUARTERPIPE / BANKED RAMP TRANSITIONS ── */}
       <group position={[6.5, 0, -12.5]}>
+        {/* Main Incline Ramp Surface */}
         <mesh position={[0, 0.72, 0]} rotation={[0.095, 0, 0]} receiveShadow castShadow>
           <boxGeometry args={[4.4, 0.14, 15]} />
           <meshStandardMaterial color="#78350f" roughness={0.65} metalness={0.1} />
         </mesh>
+
+        {/* Solid Wooden Side Skirts (Left & Right) - Encloses the underside of the ramp */}
+        <mesh position={[-2.2, 0.36, 0]} receiveShadow castShadow>
+          <boxGeometry args={[0.08, 0.72, 15]} />
+          <meshStandardMaterial color="#5c2406" roughness={0.75} />
+        </mesh>
+        <mesh position={[2.2, 0.36, 0]} receiveShadow castShadow>
+          <boxGeometry args={[0.08, 0.72, 15]} />
+          <meshStandardMaterial color="#5c2406" roughness={0.75} />
+        </mesh>
+
+        {/* Top Deck Resting Platform (Z = -7.5 to -10 in group coords, Y = 1.43) */}
+        <mesh position={[0, 1.43, -8.7]} receiveShadow castShadow>
+          <boxGeometry args={[4.4, 0.14, 2.5]} />
+          <meshStandardMaterial color="#78350f" roughness={0.65} metalness={0.1} />
+        </mesh>
+        {/* Top Deck Safety Back Wall & Rails */}
+        <mesh position={[0, 1.95, -9.95]} castShadow>
+          <boxGeometry args={[4.4, 0.9, 0.1]} />
+          <meshStandardMaterial color="#451a03" roughness={0.8} />
+        </mesh>
+        <mesh position={[-2.2, 1.95, -8.7]} castShadow>
+          <boxGeometry args={[0.1, 0.9, 2.5]} />
+          <meshStandardMaterial color="#451a03" roughness={0.8} />
+        </mesh>
+        <mesh position={[2.2, 1.95, -8.7]} castShadow>
+          <boxGeometry args={[0.1, 0.9, 2.5]} />
+          <meshStandardMaterial color="#451a03" roughness={0.8} />
+        </mesh>
+
         {[-6, -4, -2, 0, 2, 4, 6].map((zp, i) => (
           <mesh key={i} position={[0, 0.8 + zp * 0.015, zp]} rotation={[0.095, 0, 0]}>
             <boxGeometry args={[4.35, 0.01, 0.04]} />
