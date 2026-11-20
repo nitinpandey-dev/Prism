@@ -2,12 +2,14 @@ import { useState, useRef, useEffect } from 'react';
 import { useAriaStore } from '../../stores/useAriaStore';
 import { usePhysicsStore } from '../../stores/usePhysicsStore';
 import { useMissionStore } from '../../stores/useMissionStore';
-import { X, Send, Bot, Sparkles, HelpCircle } from 'lucide-react';
+import { useGameStore } from '../../stores/useGameStore';
+import { X, Send, Bot, Sparkles } from 'lucide-react';
 
 export default function AriaDialogueHUD() {
   const { isOpen, setOpen, messages, isThinking, currentMood, askAria } = useAriaStore();
   const { params, trajectory } = usePhysicsStore();
   const { stage, missionId } = useMissionStore();
+  const activeActivity = useGameStore((s) => (s as any).activeActivity || 'outpost');
 
   const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -19,8 +21,6 @@ export default function AriaDialogueHUD() {
   }, [messages, isThinking]);
 
   if (!isOpen) return null;
-
-  const activeActivity = useGameStore((s) => (s as any).activeActivity || 'outpost');
 
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();

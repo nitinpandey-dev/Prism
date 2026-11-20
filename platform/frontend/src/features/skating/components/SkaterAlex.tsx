@@ -214,7 +214,7 @@ export default function SkaterAlex() {
   });
 
   return (
-    <group ref={groupRef} position={[initialPos.current[0], 0.85, initialPos.current[2]]}>
+    <group ref={groupRef} position={[0, 0.85, 0]}>
       {/* ── SKATER ALEX: 3D CHARACTER MODEL ── */}
       <group ref={torsoRef}>
         {/* Torso & Athletic Sports Jacket */}

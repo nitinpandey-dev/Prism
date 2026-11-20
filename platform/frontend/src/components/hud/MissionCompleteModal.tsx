@@ -6,12 +6,8 @@ import { Award, CheckCircle, RotateCcw, ArrowRight, Zap } from 'lucide-react';
 export default function MissionCompleteModal() {
   const { stage, missionId, title, attemptsCount, bestScore, resetMission } = useMissionStore();
   const { lastResult, resetLaunch } = usePhysicsStore();
-  const { setLearningMode, recomputeTrajectory } = usePhysicsStore.getState()
-    ? {
-        setLearningMode: useGameStore((s) => s.setLearningMode),
-        recomputeTrajectory: usePhysicsStore((s) => s.recomputeTrajectory),
-      }
-    : ({} as any);
+  const setLearningMode = useGameStore((s) => s.setLearningMode);
+  const recomputeTrajectory = usePhysicsStore((s) => s.recomputeTrajectory);
 
   if (stage !== 'COMPLETED') return null;
 
